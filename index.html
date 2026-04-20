@@ -12,7 +12,7 @@
   <title>TomTom Route Converter</title>
 
   <script>
-    // PWA Manifest con icona Bussola su bianco, fondo SteelBlue
+    // Manifest PWA con icona bussola su bianco
     const __manifest = {
       name: "TomTom Route Converter",
       short_name: "TomTom GPX",
@@ -21,7 +21,6 @@
       display: "standalone",
       background_color: "#4682B4",
       theme_color: "#4682B4",
-      orientation: "portrait-primary",
       icons: [{
         src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' fill='%234682B4'/%3E%3Crect x='80' y='80' width='352' height='352' rx='80' fill='%23ffffff'/%3E%3Ccircle cx='256' cy='256' r='120' fill='none' stroke='%23F59E0B' stroke-width='8'/%3E%3Cpolygon points='256,160 275,240 256,256 237,240' fill='%23EF4444'/%3E%3Cpolygon points='256,352 237,272 256,256 275,272' fill='%2310B981'/%3E%3Ccircle cx='256' cy='256' r='15' fill='%23475569'/%3E%3C/svg%3E",
         sizes: "512x512",
@@ -40,32 +39,24 @@
   
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700&display=swap" rel="stylesheet"/>
 
   <style>
     :root {
-      --bg:       #4682B4; 
-      --bg2:      #3b6e99;
-      --bg3:      #2e5677;
-      --border:   #5a94c2;
-      --border2:  #4a7da6;
-      --text:     #FFFFFF;
-      --text2:    #e0e7ff;
-      --radius:   14px;
-      --safe-t:   env(safe-area-inset-top,    0px);
-      --safe-b:   env(safe-area-inset-bottom, 0px);
+      --bg: #4682B4; --bg2: #3b6e99; --bg3: #2e5677;
+      --border: #5a94c2; --border2: #4a7da6;
+      --text: #FFFFFF; --text2: #e0e7ff;
+      --radius: 14px;
+      --safe-t: env(safe-area-inset-top, 0px);
+      --safe-b: env(safe-area-inset-bottom, 0px);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Mono', monospace;
-      min-height: 100vh;
+      background: var(--bg); color: var(--text);
+      font-family: 'DM Mono', monospace; min-height: 100vh;
       -webkit-tap-highlight-color: transparent;
     }
-
-    .shell { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
 
     /* HEADER */
     .header {
@@ -77,54 +68,48 @@
     }
     .header-inner { max-width: 720px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
     .logo {
-      width: 42px; height: 42px; flex-shrink: 0;
-      background: #fff; border-radius: 10px;
+      width: 42px; height: 42px; background: #fff; border-radius: 10px;
       display: flex; align-items: center; justify-content: center;
-      font-size: 22px; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      font-size: 22px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); flex-shrink: 0;
     }
-    .header-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; color: #fff; }
+    .header-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px; line-height: 1.2; }
     .header-sub { font-size: 10px; color: var(--text2); text-transform: uppercase; letter-spacing: .05em; }
 
     main { max-width: 720px; margin: 0 auto; width: 100%; padding: 20px 16px calc(20px + var(--safe-b)); }
 
-    /* BANNER INSTALLAZIONE */
+    /* BANNER INSTALLA - VISIBILE DI DEFAULT */
     #installBanner {
       display: none; align-items: center; gap: 14px;
-      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.25);
-      border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px;
+      background: rgba(255,255,255,0.2); border: 2px solid #fff;
+      border-radius: var(--radius); padding: 16px; margin-bottom: 20px;
+      animation: fadeIn 0.5s ease;
     }
-    #installBanner.show { display: flex; }
-    .ib-text { flex: 1; font-size: 12px; line-height: 1.5; color: #fff; }
-    .ib-text b { display: block; font-size: 13px; margin-bottom: 2px; }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(-10px); } to { opacity:1; transform:translateY(0); } }
+
+    .ib-text { flex: 1; font-size: 12px; line-height: 1.4; }
+    .ib-text b { display: block; font-size: 14px; margin-bottom: 2px; }
+    
     #installBtn {
       background: #fff; color: var(--bg); border: none; border-radius: 10px;
-      padding: 8px 16px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 12px;
-      cursor: pointer; white-space: nowrap;
+      padding: 10px 18px; font-family: 'Syne', sans-serif; font-weight: 700;
+      cursor: pointer; white-space: nowrap; box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
-    .info {
-      background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
-      border-radius: var(--radius); padding: 14px; margin-bottom: 20px;
-      font-size: 13px; line-height: 1.6; color: var(--text2);
-    }
-
-    /* CARD & INPUTS */
+    /* CARDS */
     .card { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px; padding: 22px; margin-bottom: 16px; }
-    .field { margin-bottom: 18px; position: relative; }
     .label { display: block; font-size: 10px; font-weight: 500; color: var(--text2); text-transform: uppercase; margin-bottom: 8px; }
     input {
       width: 100%; background: var(--bg3); border: 1.5px solid var(--border2);
       border-radius: 12px; padding: 14px; color: #fff; font-family: inherit; font-size: 14px; outline: none;
     }
 
-    /* TASTO CONVERTI - Spaziato correttamente */
+    /* TASTO CONVERTI - SPAZIATO */
     .btn-convert {
       width: 100%; background: #fff; color: var(--bg); border: none;
       border-radius: 14px; padding: 16px; font-family: 'Syne', sans-serif;
       font-weight: 700; font-size: 15px; cursor: pointer;
       display: flex; align-items: center; justify-content: center; gap: 8px;
-      margin-top: 14px; /* Spazio aggiunto rispetto al campo URL */
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      margin-top: 18px; /* Spazio dal campo URL */
     }
 
     .btn-download {
@@ -143,78 +128,95 @@
   </style>
 </head>
 <body>
-<div class="shell">
-  <header class="header">
-    <div class="header-inner">
-      <div class="logo">🧭</div>
-      <div>
-        <div class="header-title">TomTom Route Converter</div>
-        <div class="header-sub">URL → GPX · MyDrive Compatible</div>
-      </div>
-    </div>
-  </header>
 
-  <main>
-    <div id="installBanner">
-      <div style="font-size:26px;">📲</div>
-      <div class="ib-text">
-        <b>Installa come App</b>
-        Aggiungi alla schermata home per usarla velocemente.
-      </div>
-      <button id="installBtn">Installa</button>
+<header class="header">
+  <div class="header-inner">
+    <div class="logo">🧭</div>
+    <div>
+      <div class="header-title">TomTom Route Converter</div>
+      <div class="header-sub">URL → GPX · MyDrive Compatible</div>
     </div>
+  </div>
+</header>
 
-    <div class="info">
-      Incolla l'URL della rotta di Google Maps. Genera un file <b>.gpx</b> pronto per l'importazione su TomTom.
+<main>
+  <div id="installBanner">
+    <div style="font-size:26px;">📲</div>
+    <div class="ib-text" id="ibText">
+      <b>Installa l'App</b>
+      Aggiungila alla home per usarla come un'app vera.
     </div>
+    <button id="installBtn">Installa</button>
+  </div>
 
-    <div class="card">
-      <div class="two-col">
-        <div class="field" style="margin-bottom:0">
-          <label class="label">URL della rotta</label>
-          <input type="url" id="urlIn" placeholder="Incolla l'URL qui...">
-        </div>
-        <button class="btn-convert" onclick="go()">
-          <span id="bIcon">▶</span> Converti
-        </button>
+  <div class="card">
+    <div class="two-col">
+      <div class="field">
+        <label class="label">URL della rotta Google Maps</label>
+        <input type="url" id="urlIn" placeholder="Incolla l'URL qui...">
       </div>
-      
-      <div class="field" style="margin-top:20px;">
-        <label class="label">Nome della rotta</label>
-        <input type="text" id="nameIn" value="La mia rotta">
-      </div>
+      <button class="btn-convert" onclick="go()">
+        <span id="bIcon">▶</span> Converti
+      </button>
     </div>
+    
+    <div class="field" style="margin-top:20px;">
+      <label class="label">Nome rotta</label>
+      <input type="text" id="nameIn" value="La mia rotta">
+    </div>
+  </div>
 
-    <div id="results">
-      <div class="wp-list" id="wpList"></div>
-      <button class="btn-download" onclick="download()">⬇ Scarica file .gpx</button>
-    </div>
-  </main>
-</div>
+  <div id="results">
+    <div class="wp-list" id="wpList"></div>
+    <button class="btn-download" onclick="download()">⬇ Scarica file .gpx</button>
+  </div>
+</main>
 
 <script>
 const $ = id => document.getElementById(id);
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent);
+const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-// PWA Logic per il tasto Installa
+// Gestione Banner Installazione immediata
 let _prompt = null;
-window.addEventListener('beforeinstallprompt', e => {
-  e.preventDefault(); 
-  _prompt = e;
-  $('installBanner').classList.add('show');
-});
 
-$('installBtn').addEventListener('click', async () => {
-  if (!_prompt) return;
-  _prompt.prompt();
-  const { outcome } = await _prompt.userChoice;
-  if (outcome === 'accepted') $('installBanner').classList.remove('show');
-  _prompt = null;
-});
+function initPWA() {
+  if (isStandalone()) return; // Non mostrare se già installata
 
+  const banner = $('installBanner');
+  const btn = $('installBtn');
+  const txt = $('ibText');
+
+  if (isIOS()) {
+    banner.style.display = 'flex';
+    btn.style.display = 'none';
+    txt.innerHTML = "<b>Installa su iPhone</b>Tocca l'icona <img src='https://upload.wikimedia.org/wikipedia/commons/d/d1/IOS_Share_Icon.svg' style='height:16px; vertical-align:middle'> e poi 'Aggiungi a Home'.";
+  } else {
+    // Su Android/Chrome, mostriamo il banner solo quando il browser è pronto
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      _prompt = e;
+      banner.style.display = 'flex';
+    });
+  }
+}
+
+$('installBtn').onclick = async () => {
+  if (_prompt) {
+    _prompt.prompt();
+    const { outcome } = await _prompt.userChoice;
+    if (outcome === 'accepted') $('installBanner').style.display = 'none';
+    _prompt = null;
+  }
+};
+
+initPWA();
+
+// Logica di Conversione
 async function geocode(q) {
   const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=1`);
   const d = await r.json();
-  if(!d.length) throw new Error('Luogo non trovato: ' + q);
+  if(!d.length) throw new Error('Non trovato: ' + q);
   return { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon), name: d[0].display_name.split(',')[0] };
 }
 
@@ -223,9 +225,7 @@ let _gpx = '', _name = '';
 async function go() {
   const url = $('urlIn').value.trim();
   if(!url) return;
-  
-  const icon = $('bIcon');
-  icon.innerHTML = '...';
+  $('bIcon').innerHTML = '...';
   
   try {
     const match = url.match(/maps\/dir\/([^\/]+)/);
@@ -233,10 +233,7 @@ async function go() {
     
     const stops = match[1].split('/').map(s => decodeURIComponent(s.replace(/\+/g,' '))).filter(s => s && !s.startsWith('@'));
     const wps = [];
-    
-    for(let s of stops) {
-      wps.push(await geocode(s));
-    }
+    for(let s of stops) { wps.push(await geocode(s)); }
 
     _name = $('nameIn').value || 'Rotta';
     const pts = wps.map(w => `<rtept lat="${w.lat}" lon="${w.lon}"><name>${w.name}</name></rtept>`).join('');
@@ -244,13 +241,9 @@ async function go() {
     
     const list = $('wpList'); list.innerHTML = '';
     wps.forEach((w,i) => { list.innerHTML += `<div class="wp-row"><b>${i+1}</b> ${w.name}</div>`; });
-
     $('results').style.display = 'block';
-  } catch(e) {
-    alert(e.message);
-  } finally {
-    icon.innerHTML = '▶';
-  }
+  } catch(e) { alert(e.message); } 
+  finally { $('bIcon').innerHTML = '▶'; }
 }
 
 function download() {
