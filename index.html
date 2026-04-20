@@ -12,7 +12,7 @@
   <title>TomTom Route Converter</title>
 
   <script>
-    // PWA Manifest con icona: Bussola su quadrato BIANCO
+    // PWA Manifest con icona SVG: bussola su quadrato bianco
     const __manifest = {
       name: "TomTom Route Converter",
       short_name: "TomTom GPX",
@@ -23,7 +23,7 @@
       theme_color: "#4682B4",
       orientation: "portrait-primary",
       icons: [{
-        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='white'/%3E%3Ccircle cx='256' cy='256' r='180' fill='none' stroke='%234682B4' stroke-width='16'/%3E%3Cpolygon points='256,110 290,240 256,270 222,240' fill='%23EF4444'/%3E%3Cpolygon points='256,402 222,272 256,242 290,272' fill='%2310B981'/%3E%3Ccircle cx='256' cy='256' r='25' fill='%234682B4'/%3E%3C/svg%3E",
+        src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23FFFFFF'/%3E%3Ccircle cx='256' cy='256' r='180' fill='none' stroke='%234682B4' stroke-width='12'/%3E%3Cpolygon points='256,120 280,220 256,240 232,220' fill='%23EF4444'/%3E%3Cpolygon points='256,392 232,292 256,272 280,292' fill='%2310B981'/%3E%3Ccircle cx='256' cy='256' r='20' fill='%23F59E0B'/%3E%3C/svg%3E",
         sizes: "512x512",
         type: "image/svg+xml",
         purpose: "any maskable"
@@ -36,268 +36,638 @@
     document.currentScript.parentNode.insertBefore(__link, document.currentScript);
   </script>
   
-  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='100' fill='white'/%3E%3Ccircle cx='256' cy='256' r='180' fill='none' stroke='%234682B4' stroke-width='16'/%3E%3Cpolygon points='256,110 290,240 256,270 222,240' fill='%23EF4444'/%3E%3Cpolygon points='256,402 222,272 256,242 290,272' fill='%2310B981'/%3E%3Ccircle cx='256' cy='256' r='25' fill='%234682B4'/%3E%3C/svg%3E"/>
+  <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect width='512' height='512' rx='80' fill='%23FFFFFF'/%3E%3Ccircle cx='256' cy='256' r='180' fill='none' stroke='%234682B4' stroke-width='12'/%3E%3Cpolygon points='256,120 280,220 256,240 232,220' fill='%23EF4444'/%3E%3Cpolygon points='256,392 232,292 256,272 280,292' fill='%2310B981'/%3E%3Ccircle cx='256' cy='256' r='20' fill='%23F59E0B'/%3E%3C/svg%3E"/>
   
   <link rel="preconnect" href="https://fonts.googleapis.com"/>
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 
   <style>
     :root {
-      --bg:        #4682B4; /* SteelBlue */
-      --bg2:       #ffffff;
-      --bg3:       #f1f5f9;
-      --border:    #cbd5e1;
-      --border2:   #e2e8f0;
-      --accent:    #1d4ed8;
-      --accent2:   #2563eb;
-      --green:     #059669;
-      --red:       #dc2626;
-      --text:      #ffffff; /* Per sfondo scuro */
-      --text-dark: #1e293b; /* Per card bianche */
-      --radius:    16px;
-      --safe-t:    env(safe-area-inset-top, 0px);
-      --safe-b:    env(safe-area-inset-bottom, 0px);
+      /* ─── NUOVO TEMA STEELBLUE ───────────────────────────── */
+      --bg:       #4682B4;        /* SteelBlue richiesto */
+      --bg2:      #1E3A5F;        /* Card: blu scuro per contrasto */
+      --bg3:      #162E47;        /* Input: ancora più scuro */
+      --border:   #355E7C;
+      --border2:  #2A4A66;
+      --accent:   #60A5FA;        /* Blu chiaro per accenti */
+      --accent2:  #93C5FD;
+      --accent3:  #BFDBFE;
+      --green:    #10B981;
+      --green-bg: rgba(16,185,129,.15);
+      --red:      #EF4444;
+      --amber:    #F59E0B;
+      --text:     #FFFFFF;        /* Testo bianco per leggibilità */
+      --text2:    #E2E8F0;
+      --text3:    #CBD5E1;
+      --radius:   14px;
+      --safe-t:   env(safe-area-inset-top, 0px);
+      --safe-b:   env(safe-area-inset-bottom, 0px);
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { height: 100%; -webkit-text-size-adjust: 100%; }
+
     body {
       background: var(--bg);
       color: var(--text);
-      font-family: 'DM Mono', monospace;
-      min-height: 100vh;
+      font-family: 'DM Mono', 'Courier New', monospace;
+      min-height: 100%;
+      min-height: -webkit-fill-available;
       -webkit-tap-highlight-color: transparent;
     }
 
-    .shell { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
+    /* ─── LAYOUT ───────────────────────────────────────────── */
+    .shell {
+      display: grid;
+      grid-template-rows: auto 1fr;
+      min-height: 100vh;
+    }
 
-    /* --- HEADER --- */
+    /* ─── HEADER ───────────────────────────────────────────── */
     .header {
       position: sticky; top: 0; z-index: 50;
-      padding: calc(var(--safe-t) + 15px) 20px 15px;
-      background: rgba(70, 130, 180, 0.95);
-      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-      border-bottom: 1px solid rgba(255,255,255,0.2);
+      padding: calc(var(--safe-t) + 14px) clamp(16px, 4vw, 40px) 14px;
+      background: rgba(30, 58, 95, 0.92); /* Più scuro per contrasto su SteelBlue */
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(53, 94, 124, 0.7);
     }
-    .header-inner { max-width: 720px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
-    
-    /* Icona Bussola su quadrato bianco */
+    .header-inner {
+      max-width: 720px; margin: 0 auto;
+      display: flex; align-items: center; gap: 12px;
+    }
     .logo {
-      width: 44px; height: 44px; background: white; border-radius: 12px;
+      width: 42px; height: 42px; flex-shrink: 0;
+      background: #FFFFFF; /* Quadrato bianco per icona */
+      border-radius: 12px;
       display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      font-size: 24px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.15);
     }
-    .logo svg { width: 32px; height: 32px; }
+    .header-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800; font-size: clamp(15px,3vw,18px);
+      letter-spacing: -.02em; color: var(--text);
+    }
+    .header-sub {
+      font-size: clamp(9px,2vw,11px); color: var(--text3);
+      text-transform: uppercase; letter-spacing: .1em; margin-top: 1px;
+    }
+    .header-pill {
+      margin-left: auto;
+      background: rgba(96, 165, 250, 0.15);
+      border: 1px solid rgba(96, 165, 250, 0.35);
+      border-radius: 20px; padding: 3px 11px;
+      font-size: 10px; color: var(--accent2); letter-spacing: .04em;
+    }
 
-    .header-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: white; }
-    .header-sub { font-size: 10px; opacity: 0.8; text-transform: uppercase; letter-spacing: 1px; }
+    /* ─── MAIN ─────────────────────────────────────────────── */
+    main {
+      max-width: 720px; margin: 0 auto; width: 100%;
+      padding: clamp(18px,4vw,36px) clamp(14px,4vw,36px)
+               calc(clamp(18px,4vw,36px) + var(--safe-b));
+    }
 
-    /* --- MAIN --- */
-    main { max-width: 720px; margin: 0 auto; width: 100%; padding: 20px 15px calc(30px + var(--safe-b)); }
-
-    /* --- BANNER (Appare subito) --- */
+    /* ─── INSTALL BANNER ───────────────────────────────────── */
     #installBanner {
-      display: none; background: white; border-radius: var(--radius);
-      padding: 16px; margin-bottom: 20px; align-items: center; gap: 15px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2); animation: up 0.4s ease-out;
+      display: none; align-items: center; gap: 14px;
+      background: linear-gradient(135deg, rgba(255,255,255,0.15), rgba(255,255,255,0.08));
+      border: 1px solid rgba(255,255,255,0.35);
+      border-radius: var(--radius); padding: 14px 16px; margin-bottom: 20px;
     }
     #installBanner.show { display: flex; }
-    .ib-text { flex: 1; color: var(--text-dark); font-size: 13px; line-height: 1.4; }
-    .ib-text b { color: var(--bg); display: block; margin-bottom: 2px; }
-    #installBtn {
-      background: var(--bg); color: white; border: none; border-radius: 10px;
-      padding: 10px 18px; font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer;
+    #installBanner .ib-text { flex:1; font-size:12.5px; line-height:1.65; color:var(--text); }
+    #installBanner .ib-text b { color:#FFFFFF; display:block; margin-bottom:2px; }
+    #installBanner button {
+      background: var(--accent); color:#1E3A5F; border:none;
+      border-radius:10px; padding:8px 16px;
+      font-family:'Syne',sans-serif; font-weight:700; font-size:12px;
+      cursor:pointer; white-space:nowrap; flex-shrink:0;
     }
 
+    /* ─── INFO BOX ─────────────────────────────────────────── */
     .info {
-      background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.2);
-      border-radius: var(--radius); padding: 15px; margin-bottom: 20px; font-size: 13px; line-height: 1.6;
+      background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
+      border: 1px solid rgba(255,255,255,0.28);
+      border-radius: var(--radius); padding: 14px 18px;
+      margin-bottom: 20px;
+      font-size: clamp(11.5px,2vw,13px); line-height: 1.75; color: var(--text);
+    }
+    .info b  { color: #FFFFFF; }
+    .info code { color: var(--green); background: rgba(16,185,129,.15); padding: 1px 5px; border-radius: 4px; font-size:.9em; }
+
+    /* ─── CARD ─────────────────────────────────────────────── */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 20px; padding: 22px; margin-bottom: 16px;
     }
 
-    /* --- CARD --- */
-    .card { background: var(--bg2); border-radius: 20px; padding: 22px; margin-bottom: 16px; color: var(--text-dark); box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-
-    .label { display: block; font-size: 10px; font-weight: 700; color: var(--bg); text-transform: uppercase; margin-bottom: 8px; }
-    input {
-      width: 100%; background: var(--bg3); border: 2px solid var(--border2);
-      border-radius: 12px; padding: 14px; color: var(--text-dark); font-family: inherit; font-size: 15px; outline: none;
+    /* ─── FIELD ────────────────────────────────────────────── */
+    .field { margin-bottom: 18px; }
+    .field:last-child { margin-bottom: 0; }
+    .label {
+      display: block; font-size: 10.5px; font-weight: 500;
+      color: var(--accent2); text-transform: uppercase;
+      letter-spacing: .12em; margin-bottom: 8px;
     }
-    input:focus { border-color: var(--bg); }
+    .input-wrap { position: relative; }
+    input[type="url"], input[type="text"] {
+      width: 100%;
+      background: var(--bg3); border: 1.5px solid var(--border2);
+      border-radius: 12px; padding: 13px 42px 13px 15px;
+      color: var(--text); font-family: inherit;
+      font-size: clamp(13px,3vw,15px); outline: none;
+      transition: border-color .2s, box-shadow .2s;
+      -webkit-appearance: none;
+    }
+    input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(96,165,250,.25); }
+    input::placeholder { color: var(--text3); font-size: .85em; }
+    .x-btn {
+      position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
+      width: 22px; height: 22px; background: var(--border);
+      border: none; border-radius: 50%; color: var(--text2);
+      font-size: 10px; cursor: pointer; display: none;
+      align-items: center; justify-content: center;
+    }
+    .x-btn.on { display: flex; }
 
+    /* ─── BUTTONS ──────────────────────────────────────────── */
     .btn-convert {
-      width: 100%; background: var(--bg); color: white; border: none; border-radius: 15px;
-      padding: 16px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 16px;
-      margin-top: 15px; cursor: pointer; transition: transform 0.1s;
+      width: 100%;
+      background: linear-gradient(135deg, #3B82F6, #60A5FA);
+      color: #1E3A5F; border: none; border-radius: 16px;
+      padding: clamp(15px,3vw,18px);
+      font-family: 'Syne',sans-serif; font-weight: 700;
+      font-size: clamp(14px,3vw,16px); letter-spacing: .02em;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 4px 22px rgba(0,0,0,0.2);
+      transition: opacity .2s, transform .12s;
+      position: relative; overflow: hidden;
     }
-    .btn-convert:active { transform: scale(0.98); }
+    .btn-convert::after {
+      content:''; position:absolute; inset:0;
+      background: linear-gradient(135deg,rgba(255,255,255,.25),transparent);
+    }
+    .btn-convert:active:not(:disabled) { transform: scale(.97); }
+    .btn-convert:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 
     .btn-download {
-      width: 100%; background: var(--green); color: white; border: none; border-radius: 15px;
-      padding: 16px; font-family: 'Syne', sans-serif; font-weight: 700; cursor: pointer; margin-top: 10px;
+      width: 100%;
+      background: linear-gradient(135deg,#065F46,#10B981);
+      color: #fff; border: none; border-radius: 16px;
+      padding: clamp(15px,3vw,18px);
+      font-family: 'Syne',sans-serif; font-weight: 700;
+      font-size: clamp(14px,3vw,16px); letter-spacing: .02em;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+      box-shadow: 0 4px 22px rgba(16,185,129,.28);
+      transition: transform .12s; margin-bottom: 16px;
+    }
+    .btn-download:active { transform: scale(.97); }
+
+    /* ─── PROGRESS ─────────────────────────────────────────── */
+    #progressCard { display:none; }
+    #progressCard.on { display:block; }
+    .prog-title { font-size:10.5px; color:var(--accent2); text-transform:uppercase; letter-spacing:.1em; margin-bottom:10px; }
+    .prog-track { background:var(--bg3); border-radius:100px; height:4px; margin-bottom:13px; overflow:hidden; }
+    .prog-bar   { height:100%; background:linear-gradient(90deg,var(--accent),#FFFFFF); border-radius:100px; width:0%; transition:width .4s ease; }
+    .log { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
+    .log-row { font-size:11.5px; line-height:1.65; display:flex; align-items:flex-start; gap:6px; }
+    .log-row .d { flex-shrink:0; margin-top:3px; }
+    .l-ok   .d { color:var(--green); }
+    .l-info .d { color:var(--accent2); }
+    .l-dim  .d { color:var(--text3); }
+    .l-ok   span { color:var(--text); }
+    .l-info span { color:var(--accent3); }
+    .l-dim  span { color:var(--text2); }
+
+    /* ─── ERROR ────────────────────────────────────────────── */
+    #errorCard { display:none; }
+    #errorCard.on {
+      display: flex; align-items:flex-start; gap:10px;
+      background:rgba(239,68,68,.15); border:1px solid rgba(239,68,68,.4);
+      border-radius:var(--radius); padding:14px 16px; margin-bottom:16px;
+    }
+    #errorCard .ei { font-size:18px; flex-shrink:0; }
+    #errorCard .et { font-size:12.5px; line-height:1.65; color:#FECACA; white-space:pre-line; }
+
+    /* ─── RESULTS ──────────────────────────────────────────── */
+    #results { display:none; }
+    #results.on { display:block; }
+
+    .sec-label {
+      font-size:10px; color:var(--text3); text-transform:uppercase;
+      letter-spacing:.12em; margin-bottom:8px; padding-left:2px;
     }
 
-    /* --- LOG & PROGRESS --- */
-    #progressCard { display: none; }
-    #progressCard.on { display: block; }
-    .prog-track { background: var(--bg3); height: 6px; border-radius: 10px; margin: 15px 0; overflow: hidden; }
-    .prog-bar { background: var(--bg); height: 100%; width: 0%; transition: width 0.3s; }
-    .log { font-size: 12px; color: var(--text-dark); max-height: 120px; overflow-y: auto; }
+    /* Waypoints */
+    .wp-list {
+      background:var(--bg2); border:1px solid var(--border);
+      border-radius:var(--radius); overflow:hidden; margin-bottom:16px;
+    }
+    .wp-row {
+      display:flex; align-items:center; gap:13px;
+      padding:12px 16px; border-bottom:1px solid rgba(53,94,124,.4);
+      position:relative;
+    }
+    .wp-row:last-child { border-bottom:none; }
+    .wp-line {
+      position:absolute; left:28px; top:0; bottom:0;
+      width:1px; background:var(--border2);
+    }
+    .wp-row:first-child .wp-line { top:55%; }
+    .wp-row:last-child  .wp-line { bottom:55%; }
+    .wp-dot {
+      width:24px; height:24px; border-radius:50%; flex-shrink:0;
+      display:flex; align-items:center; justify-content:center;
+      font-size:9px; font-weight:700; position:relative; z-index:1;
+    }
+    .dot-s { background:var(--green); color:#fff; }
+    .dot-e { background:var(--red);   color:#fff; }
+    .dot-m { background:var(--bg3); border:2px solid var(--accent); color:var(--accent2); }
+    .wp-info { flex:1; min-width:0; }
+    .wp-name   { font-size:clamp(12px,2.5vw,14px); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .wp-coords { font-size:10px; color:var(--text3); margin-top:2px; }
 
-    #results { display: none; }
-    #results.on { display: block; }
-    
-    .wp-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--bg3); }
-    .wp-dot { width: 24px; height: 24px; border-radius: 50%; background: var(--bg); color: white; font-size: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    /* iOS hint */
+    #iosHint { display:none; }
+    #iosHint.on {
+      background:rgba(245,158,11,.15); border:1px solid rgba(245,158,11,.35);
+      border-radius:var(--radius); padding:13px 16px; margin-bottom:16px;
+      font-size:12px; line-height:1.7; color:#FEF3C7;
+    }
+    #iosHint b { color:#FDE68A; }
 
-    @keyframes up { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .spin { width: 18px; height: 18px; border: 3px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.8s linear infinite; }
+    /* Instructions */
+    .howto {
+      background:var(--bg2); border:1px solid var(--border);
+      border-radius:var(--radius); padding:16px; margin-top:4px;
+    }
+    .howto-title { font-size:12px; color:var(--green); font-weight:500; margin-bottom:12px; display:flex; align-items:center; gap:6px; }
+    .howto-step  { display:flex; gap:10px; margin-bottom:9px; font-size:clamp(11.5px,2.2vw,13px); color:var(--text2); line-height:1.65; }
+    .howto-step:last-child { margin-bottom:0; }
+    .step-n {
+      width:20px; height:20px; flex-shrink:0;
+      background:rgba(96,165,250,.15); border:1px solid rgba(96,165,250,.35);
+      border-radius:50%; font-size:10px; color:var(--accent2);
+      display:flex; align-items:center; justify-content:center; margin-top:1px;
+    }
+
+    /* ─── SPINNER ──────────────────────────────────────────── */
+    @keyframes spin { to { transform:rotate(360deg); } }
+    .spin { width:17px; height:17px; border:2px solid rgba(255,255,255,.35); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
+
+    /* ─── ANIMATE ──────────────────────────────────────────── */
+    @keyframes up { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+    .anim { animation: up .28s ease both; }
+
+    /* ─── DESKTOP TWEAKS (≥640px) ──────────────────────────── */
+    @media (min-width: 640px) {
+      .two-col { display:grid; grid-template-columns:1fr auto; gap:14px; align-items:end; margin-bottom:0; }
+      .two-col .field { margin-bottom:0; }
+      .btn-convert { width:auto; padding:13px 28px; white-space:nowrap; align-self:end; }
+      .card { padding:28px; }
+    }
+
+    /* ─── SCROLLBAR ────────────────────────────────────────── */
+    ::-webkit-scrollbar { width:4px; }
+    ::-webkit-scrollbar-track { background:transparent; }
+    ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
   </style>
 </head>
 <body>
-
 <div class="shell">
+
   <header class="header">
     <div class="header-inner">
-      <div class="logo">
-        <svg viewBox="0 0 512 512">
-          <circle cx="256" cy="256" r="180" fill="none" stroke="#4682B4" stroke-width="20"/>
-          <polygon points="256,110 290,240 256,270 222,240" fill="#EF4444"/>
-          <polygon points="256,402 222,272 256,242 290,272" fill="#10B981"/>
-          <circle cx="256" cy="256" r="25" fill="#4682B4"/>
-        </svg>
-      </div>
+      <div class="logo">🧭</div>
       <div>
         <div class="header-title">TomTom Route Converter</div>
-        <div class="header-sub">SteelBlue Edition · PWA</div>
+        <div class="header-sub">URL → GPX · MyDrive compatible</div>
       </div>
+      <div class="header-pill">v2.0</div>
     </div>
   </header>
 
   <main>
+
     <div id="installBanner">
-      <div style="font-size:30px;">📲</div>
+      <div style="font-size:26px;flex-shrink:0">📲</div>
       <div class="ib-text">
-        <b>Installa l'App</b>
-        Aggiungi TomTom GPX alla tua home per un accesso rapido.
+        <b>Installa come App</b>
+        Aggiungi alla schermata home — funziona come un'app nativa
       </div>
       <button id="installBtn">Installa</button>
     </div>
 
     <div class="info">
-      Incolla l'URL di Google Maps. Verrà generato un file GPX compatibile con MyDrive per la navigazione a tappe.
+      <b>Come funziona:</b> crea la rotta su Google Maps con le tappe,
+      copia la URL e incollala qui sotto. Il converter genera un file
+      <code>.gpx</code> con struttura <code>&lt;rte&gt;</code> che TomTom
+      tratta come itinerario nativo — navigazione guidata tappa per tappa,
+      non semplice traccia.
     </div>
 
     <div class="card">
-      <div class="field">
-        <label class="label">Google Maps URL</label>
-        <input type="url" id="urlIn" placeholder="Incolla link qui..." autocomplete="off">
+      <div class="two-col">
+        <div class="field">
+          <label class="label" for="urlIn">URL della rotta (Google Maps)</label>
+          <div class="input-wrap">
+            <input type="url" id="urlIn"
+              placeholder="https://www.google.com/maps/dir/Milano/Brescia/Verona"
+              autocomplete="off" autocorrect="off" spellcheck="false" inputmode="url"/>
+            <button class="x-btn" id="xUrl" onclick="clearField('urlIn','xUrl')" tabindex="-1">✕</button>
+          </div>
+        </div>
+        <button class="btn-convert" id="convertBtn" onclick="go()">
+          <span id="bIcon">▶</span>
+          <span id="bText">Converti</span>
+        </button>
       </div>
-      <div class="field" style="margin-top:15px">
-        <label class="label">Nome Percorso</label>
-        <input type="text" id="nameIn" value="Nuova Rotta">
+
+      <div class="field" style="margin-top:16px;">
+        <label class="label" for="nameIn">Nome rotta</label>
+        <div class="input-wrap">
+          <input type="text" id="nameIn" value="La mia rotta"
+            placeholder="Nome del percorso" autocomplete="off"/>
+          <button class="x-btn" id="xName" onclick="clearField('nameIn','xName')" tabindex="-1">✕</button>
+        </div>
       </div>
-      <button class="btn-convert" id="convertBtn" onclick="go()">
-        <span id="bText">CONVERTI IN GPX</span>
-      </button>
     </div>
 
     <div class="card" id="progressCard">
-      <div class="label">Elaborazione...</div>
+      <div class="prog-title">Elaborazione in corso…</div>
       <div class="prog-track"><div class="prog-bar" id="progBar"></div></div>
       <div class="log" id="logEl"></div>
     </div>
 
+    <div id="errorCard">
+      <div class="ei">⚠️</div>
+      <div class="et" id="errorTxt"></div>
+    </div>
+
     <div id="results">
-      <div class="card">
-        <div class="label">Tappe rilevate</div>
-        <div id="wpList"></div>
-        <button class="btn-download" onclick="download()">SCARICA FILE .GPX</button>
+      <div class="sec-label" id="wpLabel">Tappe</div>
+      <div class="wp-list" id="wpList"></div>
+
+      <div id="iosHint">
+        <b>📱 iPhone / iPad:</b> il file .gpx viene scaricato nella app
+        <em>File</em>. Per importarlo su TomTom MyDrive aprilo da un
+        browser desktop, oppure condividilo al PC tramite AirDrop o iCloud.
+      </div>
+
+      <button class="btn-download" id="dlBtn" onclick="download()">
+        <span>⬇</span><span id="dlLabel">Scarica .gpx</span>
+      </button>
+
+      <div class="howto">
+        <div class="howto-title"><span>📌</span> Come importare su TomTom MyDrive</div>
+        <div class="howto-step"><div class="step-n">1</div><div>Apri <b style="color:var(--accent2)">mydrive.tomtom.com</b> da browser — preferibilmente da PC</div></div>
+        <div class="howto-step"><div class="step-n">2</div><div>Menu laterale → <b>Importa rotta</b> → seleziona il file <b>.gpx</b> scaricato</div></div>
+        <div class="howto-step"><div class="step-n">3</div><div>TomTom riconosce la struttura <code style="color:var(--green);font-size:.9em">&lt;rte&gt;</code> e tratta la rotta come itinerario guidato ✓</div></div>
+        <div class="howto-step"><div class="step-n">4</div><div>Sincronizza il navigatore con MyDrive — la rotta sarà disponibile sul display</div></div>
       </div>
     </div>
+
   </main>
 </div>
 
 <script>
-const $ = id => document.getElementById(id);
-let _gpx = '', _name = '', _prompt = null;
+const $  = id => document.getElementById(id);
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent);
+const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
 
-// --- INIZIALIZZAZIONE PWA BANNER (SUBITO) ---
+function clearField(inputId, btnId) {
+  $(inputId).value = '';
+  $(btnId).classList.remove('on');
+  $(inputId).focus();
+}
+
+['urlIn','nameIn'].forEach(id => {
+  $(id).addEventListener('input', function() {
+    const b = id === 'urlIn' ? 'xUrl' : 'xName';
+    $(b).classList.toggle('on', this.value.length > 0);
+  });
+});
+$('urlIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+
+// ── GEOCODING ─────────────────────────────────────────────────────
+async function geocode(q) {
+  const r = await fetch(
+    'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q) +
+    '&format=json&limit=1&accept-language=it,en',
+    { headers: { 'User-Agent': 'TomTomRouteConverter/2.0' } }
+  );
+  if (!r.ok) throw new Error('Errore di rete: "' + q + '"');
+  const d = await r.json();
+  if (!d.length) throw new Error('Luogo non trovato: "' + q + '"');
+  return { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon), name: d[0].display_name.split(',')[0].trim() };
+}
+
+// ── PARSERS ───────────────────────────────────────────────────────
+function coordStr(s) {
+  const m = s.match(/^(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)$/);
+  return m ? { lat: parseFloat(m[1]), lon: parseFloat(m[2]), name: s } : null;
+}
+const isBlob = s => s.includes('data=') || s.includes('!3m') || s.includes('authuser=');
+function blobCoords(s) {
+  const re = /!1d(-?\d+\.\d+)!2d(-?\d+\.\d+)/g, pairs = [];
+  let m; while ((m = re.exec(s)) !== null) pairs.push({ lon: parseFloat(m[1]), lat: parseFloat(m[2]) });
+  if (!pairs.length) return null;
+  const p = pairs[pairs.length - 1];
+  return { lat: p.lat, lon: p.lon, name: p.lat.toFixed(5) + ',' + p.lon.toFixed(5) };
+}
+function parseDir(url) {
+  const m = url.match(/maps\/dir\/(.+?)(?:\/(?:@[^/]+)?$|$)/);
+  if (!m) return null;
+  return m[1].split('/').map(s => decodeURIComponent(s.replace(/\+/g,' ')).trim()).filter(s => s && !s.startsWith('@'));
+}
+function parseQuery(url) {
+  try {
+    const u = new URL(url), o = u.searchParams.get('origin'), d = u.searchParams.get('destination'), w = u.searchParams.get('waypoints');
+    if (!o || !d) return null;
+    const stops = [o]; if (w) stops.push(...w.split('|').filter(Boolean)); stops.push(d);
+    return stops;
+  } catch { return null; }
+}
+function extractStops(raw) {
+  let url = raw.trim();
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+  if (url.includes('maps/dir/'))    { const s = parseDir(url);   if (s && s.length >= 2) return { stops: s, src: 'Google Maps' }; }
+  if (url.includes('origin='))      { const s = parseQuery(url); if (s && s.length >= 2) return { stops: s, src: 'Google Maps' }; }
+  return null;
+}
+
+// ── GPX ───────────────────────────────────────────────────────────
+function buildGPX(wps, name) {
+  const pts = wps.map(w => '  <rtept lat="'+w.lat.toFixed(6)+'" lon="'+w.lon.toFixed(6)+'">\n    <name>'+esc(w.name)+'</name>\n  </rtept>').join('\n');
+  return '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 2.0"\n  xmlns="http://www.topografix.com/GPX/1/1">\n  <metadata><name>'+esc(name)+'</name></metadata>\n  <rte>\n    <name>'+esc(name)+'</name>\n'+pts+'\n  </rte>\n</gpx>';
+}
+
+// ── STATE ─────────────────────────────────────────────────────────
+let _gpx = '', _name = '';
+
+function setProgress(p) { $('progBar').style.width = p + '%'; }
+function addLog(msg, t='dim') {
+  const icons = { ok:'●', info:'◆', dim:'○' };
+  const d = document.createElement('div');
+  d.className = 'log-row l-' + t;
+  d.innerHTML = '<span class="d">'+icons[t]+'</span><span>'+msg+'</span>';
+  $('logEl').appendChild(d);
+  $('logEl').scrollTop = 9999;
+}
+
+// ── MAIN ─────────────────────────────────────────────────────────
+async function go() {
+  const urlVal  = $('urlIn').value.trim();
+  const nameVal = $('nameIn').value.trim() || 'La mia rotta';
+  if (!urlVal) { $('urlIn').focus(); return; }
+
+  $('progressCard').classList.remove('on');
+  $('errorCard').classList.remove('on');
+  $('results').classList.remove('on');
+  $('logEl').innerHTML = '';
+  _gpx = ''; _name = nameVal;
+
+  const btn = $('convertBtn');
+  btn.disabled = true;
+  $('bIcon').innerHTML = '<div class="spin"></div>';
+  $('bText').textContent = 'Elaborazione…';
+  $('progressCard').classList.add('on');
+  setProgress(5);
+
+  try {
+    const parsed = extractStops(urlVal);
+    if (!parsed) throw new Error('URL non riconosciuta.\nServono URL Google Maps.');
+
+    addLog('Fonte: ' + parsed.src + ' · ' + parsed.stops.length + ' tappe trovate', 'ok');
+    setProgress(15);
+
+    const wps = [];
+    for (let i = 0; i < parsed.stops.length; i++) {
+      const s = parsed.stops[i];
+      addLog('Tappa ' + (i+1) + '/' + parsed.stops.length + ' · ' + (s.length > 42 ? s.slice(0,42)+'…' : s), 'dim');
+      const cd = coordStr(s);
+      if (cd) {
+        wps.push(cd);
+        addLog('↳ coordinate: ' + cd.lat.toFixed(4) + ', ' + cd.lon.toFixed(4), 'info');
+      } else if (isBlob(s)) {
+        const ex = blobCoords(s);
+        if (ex) { wps.push(ex); addLog('↳ estratte dal blob: ' + ex.lat.toFixed(4) + ', ' + ex.lon.toFixed(4), 'info'); }
+        else addLog('↳ blob non decodificabile — tappa saltata', 'dim');
+      } else {
+        const g = await geocode(s);
+        wps.push(g);
+        addLog('↳ ' + g.name + ' (' + g.lat.toFixed(4) + ', ' + g.lon.toFixed(4) + ')', 'info');
+        if (i < parsed.stops.length - 1) await sleep(1150);
+      }
+      setProgress(15 + Math.round(70 * (i+1) / parsed.stops.length));
+    }
+
+    if (wps.length < 2) throw new Error('Trovate meno di 2 tappe valide.\nControlla la URL e riprova.');
+
+    _gpx  = buildGPX(wps, nameVal);
+    setProgress(100);
+    addLog('File GPX generato · ' + wps.length + ' tappe · struttura &lt;rte&gt;', 'ok');
+
+    const list = $('wpList'); list.innerHTML = '';
+    wps.forEach((w, i) => {
+      const isF = i===0, isL = i===wps.length-1;
+      const row = document.createElement('div');
+      row.className = 'wp-row anim'; row.style.animationDelay = (i*45)+'ms';
+      row.innerHTML =
+        '<div class="wp-line"></div>' +
+        '<div class="wp-dot ' + (isF?'dot-s':isL?'dot-e':'dot-m') + '">' + (isF?'A':isL?'B':i) + '</div>' +
+        '<div class="wp-info"><div class="wp-name">'+esc(w.name)+'</div>' +
+        '<div class="wp-coords">'+w.lat.toFixed(5)+', '+w.lon.toFixed(5)+'</div></div>';
+      list.appendChild(row);
+    });
+    $('wpLabel').textContent = 'Tappe (' + wps.length + ')';
+    $('dlLabel').textContent = 'Scarica  ' + nameVal.replace(/\s+/g,'_') + '.gpx';
+
+    if (isIOS()) $('iosHint').classList.add('on');
+    setTimeout(() => $('results').classList.add('on'), 250);
+
+  } catch(err) {
+    $('progressCard').classList.remove('on');
+    $('errorTxt').textContent = err.message;
+    $('errorCard').classList.add('on');
+  } finally {
+    btn.disabled = false;
+    $('bIcon').textContent = '▶';
+    $('bText').textContent = 'Converti';
+  }
+}
+
+// ── DOWNLOAD ──────────────────────────────────────────────────────
+function download() {
+  if (!_gpx) return;
+  const fn = _name.replace(/\s+/g,'_') + '.gpx';
+  const a = Object.assign(document.createElement('a'), {
+    href: URL.createObjectURL(new Blob([_gpx], { type: 'application/gpx+xml' })),
+    download: fn
+  });
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(a.href);
+}
+
+// ── PWA LOGIC: Banner visibile SUBITO all'avvio ─────────────────
+let _prompt = null;
+
 function initPWA() {
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-  if (isStandalone) return;
+  // Se l'app è già installata (standalone), non mostriamo il banner
+  if (isStandalone()) return;
 
   const banner = $('installBanner');
-  banner.classList.add('show'); // Mostra subito
+  const btn = $('installBtn');
+  const txt = banner.querySelector('.ib-text');
 
-  if (/iPhone|iPad|iPod/.test(navigator.userAgent)) {
-    $('installBtn').style.display = 'none';
-    banner.querySelector('.ib-text').innerHTML = "<b>Installa su iPhone</b>Tocca l'icona di condivisione <img src='https://upload.wikimedia.org/wikipedia/commons/d/d1/IOS_Share_Icon.svg' style='height:16px; vertical-align:middle'> e seleziona 'Aggiungi a Home'.";
+  // ✅ MOSTRA IL BANNER IMMEDIATAMENTE ALL'AVVIO
+  banner.classList.add('show');
+
+  if (isIOS()) {
+    btn.style.display = 'none';
+    txt.innerHTML = "<b>Installa su iPhone</b>Tocca l'icona di condivisione <img src='https://upload.wikimedia.org/wikipedia/commons/d/d1/IOS_Share_Icon.svg' style='height:16px; vertical-align:middle; filter: brightness(0) invert(1);'> e seleziona 'Aggiungi a Home'.";
+  } else {
+    // Android: cattura l'evento beforeinstallprompt quando disponibile
+    window.addEventListener('beforeinstallprompt', e => {
+      e.preventDefault();
+      _prompt = e;
+    });
   }
-
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    _prompt = e;
-  });
 }
 
 $('installBtn').addEventListener('click', async () => {
   if (_prompt) {
     _prompt.prompt();
     const { outcome } = await _prompt.userChoice;
-    if (outcome === 'accepted') $('installBanner').classList.remove('show');
     _prompt = null;
+    if (outcome === 'accepted') $('installBanner').classList.remove('show');
+  } else if (!isIOS()) {
+    alert("Il browser sta preparando l'installazione. Attendi qualche secondo e riprova!");
   }
 });
 
-// --- LOGICA DI CONVERSIONE ---
-async function go() {
-  const url = $('urlIn').value.trim();
-  if(!url) return;
+window.addEventListener('appinstalled', () => $('installBanner').classList.remove('show'));
 
-  _name = $('nameIn').value || 'Rotta';
-  $('progressCard').classList.add('on');
-  $('results').classList.remove('on');
-  $('logEl').innerHTML = '';
-  $('progBar').style.width = '10%';
+// Eseguiamo il controllo PWA all'avvio della pagina
+initPWA();
 
-  try {
-    // Simulazione parsing (logica semplificata per brevità come richiesto)
-    addLog("Analisi URL...");
-    await new Promise(r => setTimeout(r, 800));
-    $('progBar').style.width = '60%';
-    
-    // In un caso reale qui ci sarebbe il fetch/parsing delle tappe
-    // Creiamo un GPX fittizio per l'esempio
-    _gpx = `<?xml version="1.0" encoding="UTF-8"?><gpx version="1.1"><rte><name>${_name}</name></rte></gpx>`;
-    
-    addLog("File GPX generato correttamente", "green");
-    $('progBar').style.width = '100%';
-    setTimeout(() => $('results').classList.add('on'), 500);
-  } catch(e) {
-    addLog("Errore: " + e.message, "red");
-  }
+// ── SERVICE WORKER ────────────────────────────────────────────────
+if ('serviceWorker' in navigator) {
+  const sw = `
+const V='tt-gpx-v2-steelblue';
+self.addEventListener('install',  e => { e.waitUntil(caches.open(V).then(c=>c.addAll(['/']))); self.skipWaiting(); });
+self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k))))); self.clients.claim(); });
+self.addEventListener('fetch',    e => { if(e.request.url.includes('nominatim'))return; e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))); });
+  `;
+  navigator.serviceWorker
+    .register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'})))
+    .catch(()=>{});
 }
-
-function addLog(m, color) {
-  const d = document.createElement('div');
-  if(color) d.style.color = `var(--${color})`;
-  d.textContent = "> " + m;
-  $('logEl').appendChild(d);
-}
-
-function download() {
-  const blob = new Blob([_gpx], {type: 'application/gpx+xml'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = `${_name.replace(/\s+/g,'_')}.gpx`;
-  a.click();
-}
-
-window.onload = initPWA;
 </script>
-
 </body>
 </html>
-```
