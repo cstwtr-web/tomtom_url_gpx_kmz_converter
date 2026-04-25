@@ -9,23 +9,30 @@
 <meta name="apple-mobile-web-app-title" content="TomTom GPX"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="description" content="Converti URL Google Maps in file GPX o KMZ per TomTom MyDrive e Google Earth"/>
-<title>TomTom Route Converter - PWA con Espansione URL Cloudflare</title>
+<title>TomTom Route Converter - PWA con Icona ed Espansione URL</title>
 <script>
 // ── GENERAZIONE ICONA PNG DINAMICA (Compatibile iOS/Android) ──
 (function(){
+// 1. Disegna la bussola su Canvas ed esporta in PNG reale
 const c = document.createElement('canvas');
 c.width = 512; c.height = 512;
 const ctx = c.getContext('2d');
 ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0,0,512,512);
+// Cerchio esterno blu
 ctx.beginPath(); ctx.arc(256,256,180,0,Math.PI*2); ctx.strokeStyle='#4682B4'; ctx.lineWidth=12; ctx.stroke();
+// Triangolo Nord (Rosso)
 ctx.beginPath(); ctx.moveTo(256,120); ctx.lineTo(280,220); ctx.lineTo(232,220); ctx.closePath(); ctx.fillStyle='#EF4444'; ctx.fill();
+// Triangolo Sud (Verde)
 ctx.beginPath(); ctx.moveTo(256,392); ctx.lineTo(232,292); ctx.lineTo(280,292); ctx.closePath(); ctx.fillStyle='#10B981'; ctx.fill();
+// Centro (Giallo)
 ctx.beginPath(); ctx.arc(256,256,20,0,Math.PI*2); ctx.fillStyle='#F59E0B'; ctx.fill();
 const iconPng = c.toDataURL('image/png');
+// 2. Apple Touch Icon (obbligatorio per iOS)
 const appleLink = document.createElement('link');
 appleLink.rel = 'apple-touch-icon';
 appleLink.href = iconPng;
 document.head.appendChild(appleLink);
+// 3. Web App Manifest con icone PNG iniettato come Data URI
 const manifest = {
 name: "TomTom Route Converter",
 short_name: "TomTom GPX",
@@ -46,15 +53,17 @@ manifestLink.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIC
 document.head.appendChild(manifestLink);
 })();
 </script>
+<!-- ██ JSZip per compressione KMZ ██ -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
 :root {
---bg:       #4682B4;
---bg2:      #1E3A5F;
---bg3:      #162E47;
+/* ─── TEMA STEELBLUE ───────────────────────────── */
+--bg:       #4682B4;        /* SteelBlue */
+--bg2:      #1E3A5F;        /* Card: blu scuro */
+--bg3:      #162E47;        /* Input: più scuro */
 --border:   #355E7C;
 --border2:  #2A4A66;
 --accent:   #60A5FA;
@@ -81,11 +90,13 @@ min-height: 100%;
 min-height: -webkit-fill-available;
 -webkit-tap-highlight-color: transparent;
 }
+/* ─── LAYOUT ───────────────────────────────────────────── */
 .shell {
 display: grid;
 grid-template-rows: auto 1fr;
 min-height: 100vh;
 }
+/* ─── HEADER ───────────────────────────────────────────── */
 .header {
 position: sticky; top: 0; z-index: 50;
 padding: calc(var(--safe-t) + 14px) clamp(16px, 4vw, 40px) 14px;
@@ -122,11 +133,13 @@ border: 1px solid rgba(96, 165, 250, 0.35);
 border-radius: 20px; padding: 3px 11px;
 font-size: 10px; color: var(--accent2); letter-spacing: .04em;
 }
+/* ─── MAIN ─────────────────────────────────────────────── */
 main {
 max-width: 720px; margin: 0 auto; width: 100%;
 padding: clamp(18px,4vw,36px) clamp(14px,4vw,36px)
 calc(clamp(18px,4vw,36px) + var(--safe-b));
 }
+/* ─── INFO BOX ─────────────────────────────────────────── */
 .info {
 background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
 border: 1px solid rgba(255,255,255,0.28);
@@ -136,11 +149,13 @@ font-size: clamp(11.5px,2vw,13px); line-height: 1.75; color: var(--text);
 }
 .info b  { color: #FFFFFF; }
 .info code { color: var(--green); background: rgba(16,185,129,.15); padding: 1px 5px; border-radius: 4px; font-size:.9em; }
+/* ─── CARD ─────────────────────────────────────────────── */
 .card {
 background: var(--bg2);
 border: 1px solid var(--border);
 border-radius: 20px; padding: 22px; margin-bottom: 16px;
 }
+/* ─── FIELD ────────────────────────────────────────────── */
 .field { margin-bottom: 18px; }
 .field:last-child { margin-bottom: 0; }
 .label {
@@ -168,6 +183,7 @@ font-size: 10px; cursor: pointer; display: none;
 align-items: center; justify-content: center;
 }
 .x-btn.on { display: flex; }
+/* ─── BUTTONS ──────────────────────────────────────────── */
 .btn-convert {
 width: 100%;
 background: linear-gradient(135deg, #3B82F6, #60A5FA);
@@ -198,6 +214,7 @@ box-shadow: 0 4px 22px rgba(16,185,129,.28);
 transition: transform .12s; margin-bottom: 16px;
 }
 .btn-download:active { transform: scale(.97); }
+/* ─── PROGRESS ─────────────────────────────────────────── */
 #progressCard { display:none; }
 #progressCard.on { display:block; }
 .prog-title { font-size:10.5px; color:var(--accent2); text-transform:uppercase; letter-spacing:.1em; margin-bottom:10px; }
@@ -212,6 +229,7 @@ transition: transform .12s; margin-bottom: 16px;
 .l-ok   span { color:var(--text); }
 .l-info span { color:var(--accent3); }
 .l-dim  span { color:var(--text2); }
+/* ─── ERROR ────────────────────────────────────────────── */
 #errorCard { display:none; }
 #errorCard.on {
 display: flex; align-items:flex-start; gap:10px;
@@ -220,12 +238,14 @@ border-radius:var(--radius); padding:14px 16px; margin-bottom:16px;
 }
 #errorCard .ei { font-size:18px; flex-shrink:0; }
 #errorCard .et { font-size:12.5px; line-height:1.65; color:#FECACA; white-space:pre-line; }
+/* ─── RESULTS ──────────────────────────────────────────── */
 #results { display:none; }
 #results.on { display:block; }
 .sec-label {
 font-size:10px; color:var(--text3); text-transform:uppercase;
 letter-spacing:.12em; margin-bottom:8px; padding-left:2px;
 }
+/* Waypoints */
 .wp-list {
 background:var(--bg2); border:1px solid var(--border);
 border-radius:var(--radius); overflow:hidden; margin-bottom:16px;
@@ -253,6 +273,7 @@ font-size:9px; font-weight:700; position:relative; z-index:1;
 .wp-info { flex:1; min-width:0; }
 .wp-name   { font-size:clamp(12px,2.5vw,14px); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .wp-coords { font-size:10px; color:var(--text3); margin-top:2px; }
+/* iOS hint */
 #iosHint { display:none; }
 #iosHint.on {
 background:rgba(245,158,11,.15); border:1px solid rgba(245,158,11,.35);
@@ -260,6 +281,7 @@ border-radius:var(--radius); padding:13px 16px; margin-bottom:16px;
 font-size:12px; line-height:1.7; color:#FEF3C7;
 }
 #iosHint b { color:#FDE68A; }
+/* Instructions */
 .howto {
 background:var(--bg2); border:1px solid var(--border);
 border-radius:var(--radius); padding:16px; margin-top:4px;
@@ -273,17 +295,20 @@ background:rgba(96,165,250,.15); border:1px solid rgba(96,165,250,.35);
 border-radius:50%; font-size:10px; color:var(--accent2);
 display:flex; align-items:center; justify-content:center; margin-top:1px;
 }
+/* ─── SPINNER ──────────────────────────────────────────── */
 @keyframes spin { to { transform:rotate(360deg); } }
 .spin { width:17px; height:17px; border:2px solid rgba(255,255,255,.35); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
+/* ─── ANIMATE ──────────────────────────────────────────── */
 @keyframes up { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
 .anim { animation: up .28s ease both; }
+/* ─── DESKTOP TWEAKS (≥640px) ──────────────────────────── */
 @media (min-width: 640px) {
 .two-col { display:grid; grid-template-columns:1fr auto; gap:14px; align-items:end; margin-bottom:0; }
 .two-col .field { margin-bottom:0; }
 .btn-convert { width:auto; padding:13px 28px; white-space:nowrap; align-self:end; }
 .card { padding:28px; }
 }
-/* ██ NUOVO STILE PER PULSANTE ESPANSIONE ██ */
+/* ─── SHORT URL WARNING ────────────────────────────────── */
 #shortWarn {
 display: none;
 background: rgba(245,158,11,.13);
@@ -302,19 +327,24 @@ font-family: 'Syne', sans-serif;
 font-weight: 700; font-size: 15px;
 color: #FCD34D; margin-bottom: 10px;
 }
+.sw-steps { margin: 10px 0 16px 4px; }
+.sw-step  { display: flex; gap: 10px; margin-bottom: 8px; align-items: flex-start; }
+.sw-num {
+width: 22px; height: 22px; flex-shrink: 0;
+background: rgba(245,158,11,.25);
+border: 1px solid rgba(245,158,11,.5);
+border-radius: 50%; font-size: 11px; font-weight: 700;
+color: #FCD34D; display: flex; align-items: center;
+justify-content: center; margin-top: 2px;
+}
 .btn-expand {
 display: inline-flex; align-items: center; gap: 7px;
 background: #F59E0B; color: #1a1a1a;
 border: none; border-radius: 11px; padding: 12px 22px;
 font-family: 'Syne', sans-serif; font-weight: 700;
-font-size: 14px; cursor: pointer;
-width: 100%;
-justify-content: center;
-margin-top: 10px;
+font-size: 14px; cursor: pointer; text-decoration: none;
 }
-.btn-expand:disabled {
-background: #b8860b; cursor: not-allowed; opacity: 0.7;
-}
+/* ─── SCROLLBAR ────────────────────────────────────────── */
 ::-webkit-scrollbar { width:4px; }
 ::-webkit-scrollbar-track { background:transparent; }
 ::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
@@ -329,7 +359,7 @@ background: #b8860b; cursor: not-allowed; opacity: 0.7;
 <div class="header-title">TomTom Route Converter</div>
 <div class="header-sub">URL → GPX / KMZ · MyDrive & Earth</div>
 </div>
-<div class="header-pill">v4.0</div>
+<div class="header-pill">v3.0</div>
 </div>
 </header>
 <main>
@@ -363,6 +393,7 @@ placeholder="Nome del percorso" autocomplete="off"/>
 <button class="x-btn" id="xName" onclick="clearField('nameIn','xName')" tabindex="-1">✕</button>
 </div>
 </div>
+<!-- ██ SELETTORE FORMATO OUTPUT ██ -->
 <div class="field">
 <label class="label" for="fmtIn">Formato di output</label>
 <select id="fmtIn">
@@ -371,13 +402,18 @@ placeholder="Nome del percorso" autocomplete="off"/>
 </select>
 </div>
 </div>
-<!-- ██ AVVISO URL BREVE - CON PULSANTE ESPANSIONE ██ -->
+<!-- AVVISO URL BREVE - Funzione espansione -->
 <div id="shortWarn">
 <div class="sw-title">🔗 URL breve rilevata</div>
 <p>Hai incollato un link breve <strong>(maps.app.goo.gl/…)</strong>.
 Il converter ha bisogno della URL completa.<br>
-Clicca il pulsante qui sotto per espanderla automaticamente senza aprire siti esterni.</p>
-<button id="expandBtn" class="btn-expand">🔗 Espandi URL automaticamente</button>
+Seguendo questi 3 passi lo risolvi in pochi secondi:</p>
+<div class="sw-steps">
+<div class="sw-step"><div class="sw-num">1</div><div>Clicca il pulsante qui sotto — si apre <strong>expandurl.net</strong> con il tuo link già inserito</div></div>
+<div class="sw-step"><div class="sw-num">2</div><div>Su expandurl.net clicca <strong>Expand URL</strong> e copia la URL lunga che appare</div></div>
+<div class="sw-step"><div class="sw-num">3</div><div>Torna qui, <strong>incolla la URL completa</strong> e clicca Converti</div></div>
+</div>
+<a id="expandLink" href="#" target="_blank" rel="noopener" class="btn-expand">🔗&nbsp; Espandi URL</a>
 </div>
 <div class="card" id="progressCard">
 <div class="prog-title">Elaborazione in corso…</div>
@@ -423,6 +459,8 @@ $(b).classList.toggle('on', this.value.length > 0);
 });
 });
 $('urlIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+
+// ██ GESTIONE FORMATO SELEZIONATO ██
 let _output = '', _name = '', _currentFormat = 'gpx';
 $('fmtIn').addEventListener('change', function() {
 _currentFormat = this.value;
@@ -431,6 +469,7 @@ if (_output) {
 $('dlLabel').textContent = 'Scarica  ' + _name.replace(/\s+/g,'_') + '.' + _currentFormat;
 }
 });
+
 function updateHowto() {
 const isGpx = _currentFormat === 'gpx';
 $('howtoContent').innerHTML = isGpx ? `
@@ -443,17 +482,20 @@ $('howtoContent').innerHTML = isGpx ? `
 <div class="howto-step"><div class="step-n">3</div><div>Il percorso seguirà le strade reali in 3D con waypoint e popup ✓</div></div>
 <div class="howto-step"><div class="step-n">4</div><div>Puoi salvarlo in "I miei luoghi" o visualizzarlo in modalità tour</div></div>`;
 }
+
+// ── GEOCODING ─────────────────────────────────────────────────────
 async function geocode(q) {
 const r = await fetch(
 'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q) +
 '&format=json&limit=1&accept-language=it,en',
-{ headers: { 'User-Agent': 'TomTomRouteConverter/4.0' } }
+{ headers: { 'User-Agent': 'TomTomRouteConverter/3.0' } }
 );
 if (!r.ok) throw new Error('Errore di rete: "' + q + '"');
 const d = await r.json();
 if (!d.length) throw new Error('Luogo non trovato: "' + q + '"');
 return { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon), name: d[0].display_name.split(',')[0].trim() };
 }
+// ── PARSERS ───────────────────────────────────────────────────────
 function coordStr(s) {
 const m = s.match(/^(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)$/);
 return m ? { lat: parseFloat(m[1]), lon: parseFloat(m[2]), name: s } : null;
@@ -479,6 +521,7 @@ const stops = [o]; if (w) stops.push(...w.split('|').filter(Boolean)); stops.pus
 return stops;
 } catch { return null; }
 }
+// ── RILEVAMENTO URL BREVI (da Claude) ───────────────────────────
 function isShortUrl(url) {
 return /maps\.app\.goo\.gl|goo\.gl\/maps/i.test(url);
 }
@@ -489,42 +532,8 @@ if (url.includes('maps/dir/'))    { const s = parseDir(url);   if (s && s.length
 if (url.includes('origin='))      { const s = parseQuery(url); if (s && s.length >= 2) return { stops: s, src: 'Google Maps' }; }
 return null;
 }
-// ██ ESPANSIONE URL VIA CLOUDFLARE WORKER ██
-async function espandiUrlCloudflare(shortUrl) {
-    const WORKER_URL = 'https://withered-forest-75ee.cst-wtr.workers.dev';
-    const response = await fetch(`${WORKER_URL}?url=${encodeURIComponent(shortUrl)}`);
-    if (!response.ok) throw new Error('Errore nella risposta del Worker');
-    return await response.text();
-}
 
-// Event listener per il bottone Espandi URL
-$('expandBtn').addEventListener('click', async function(e) {
-    const btn = e.currentTarget;
-    const originalText = btn.textContent;
-    
-    btn.disabled = true;
-    btn.textContent = 'Espansione in corso... ⏳';
-    
-    try {
-        const urlCorta = $('urlIn').value.trim();
-        const urlLunga = await espandiUrlCloudflare(urlCorta);
-        
-        $('urlIn').value = urlLunga;
-        $('shortWarn').classList.remove('on');
-        $('xUrl').classList.add('on');
-        
-        alert('✅ URL espansa correttamente! Ora puoi cliccare su "Converti".');
-        
-    } catch (err) {
-        console.error(err);
-        alert('❌ Errore durante l\'espansione: ' + err.message);
-        btn.disabled = false;
-    } finally {
-        btn.textContent = originalText;
-        btn.disabled = false;
-    }
-});
-
+// ██ ALGORITMO DOUGLAS-PEUCKER (semplificazione polyline) ██
 function douglasPeucker(points, tolerance) {
 if (points.length <= 2) return points;
 let maxDist = 0, maxIndex = 0;
@@ -551,6 +560,8 @@ const x = lineStart.lon + u * dx;
 const y = lineStart.lat + u * dy;
 return Math.sqrt((point.lon - x) ** 2 + (point.lat - y) ** 2);
 }
+
+// ██ RICOSTRUZIONE PERCORSO STRADALE VIA OSRM ██
 async function fetchOSRMRoute(waypoints) {
 const coords = waypoints.map(w => w.lon + ',' + w.lat).join(';');
 const url = 'https://router.project-osrm.org/route/v1/driving/' + coords + '?overview=full&geometries=geojson&alternatives=false';
@@ -560,31 +571,45 @@ const data = await r.json();
 if (!data.routes || !data.routes[0] || !data.routes[0].geometry) {
 throw new Error('Impossibile ricostruire il percorso');
 }
+// Estrai coordinate dalla geometria GeoJSON (ordine: [lon, lat])
 const routeCoords = data.routes[0].geometry.coordinates.map(c => ({ lon: c[0], lat: c[1] }));
+// Applica semplificazione Douglas-Peucker con tolleranza 15 metri (~0.000135 gradi)
 const simplified = douglasPeucker(routeCoords, 0.000045);
 addLog('Percorso stradale: ' + routeCoords.length + ' punti → semplificati a ' + simplified.length, 'info');
 return simplified;
 }
+
+// ── GPX ───────────────────────────────────────────────────────────
 function buildGPX(wps, name, routePoints = null) {
+// Se abbiamo routePoints (percorso stradale), li usiamo come traccia
+// altrimenti usiamo i waypoint come rtept
 if (routePoints && routePoints.length > 0) {
 const trkpts = routePoints.map(p => '    <trkpt lat="'+p.lat.toFixed(6)+'" lon="'+p.lon.toFixed(6)+'"/>').join('\n');
-return '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 4.0"\nxmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>'+esc(name)+'</name></metadata>\n<rte>\n<name>'+esc(name)+'</name>\n'+wps.map(w => '  <rtept lat="'+w.lat.toFixed(6)+'" lon="'+w.lon.toFixed(6)+'">\n<name>'+esc(w.name)+'</name>\n</rtept>').join('\n')+'\n</rte>\n<trk>\n<name>'+esc(name)+' - Traccia</name>\n<trkseg>\n'+trkpts+'\n</trkseg>\n</trk>\n</gpx>';
+return '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 3.0"\nxmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>'+esc(name)+'</name></metadata>\n<rte>\n<name>'+esc(name)+'</name>\n'+wps.map(w => '  <rtept lat="'+w.lat.toFixed(6)+'" lon="'+w.lon.toFixed(6)+'">\n    <name>'+esc(w.name)+'</name>\n  </rtept>').join('\n')+'\n</rte>\n<trk>\n<name>'+esc(name)+' - Traccia</name>\n<trkseg>\n'+trkpts+'\n</trkseg>\n</trk>\n</gpx>';
 } else {
-const pts = wps.map(w => '  <rtept lat="'+w.lat.toFixed(6)+'" lon="'+w.lon.toFixed(6)+'">\n<name>'+esc(w.name)+'</name>\n</rtept>').join('\n');
-return '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 4.0"\nxmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>'+esc(name)+'</name></metadata>\n<rte>\n<name>'+esc(name)+'</name>\n'+pts+'\n</rte>\n</gpx>';
+const pts = wps.map(w => '  <rtept lat="'+w.lat.toFixed(6)+'" lon="'+w.lon.toFixed(6)+'">\n    <name>'+esc(w.name)+'</name>\n  </rtept>').join('\n');
+return '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 3.0"\nxmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>'+esc(name)+'</name></metadata>\n<rte>\n<name>'+esc(name)+'</name>\n'+pts+'\n</rte>\n</gpx>';
 }
 }
+
+// ██ KMZ GENERATOR (con percorso stradale) ██
 async function buildKMZ(wps, name, routePoints) {
-const routeCoords = routePoints.map(p => p.lon.toFixed(6) + ',' + p.lat.toFixed(6) + ',0').join('\n');
-const wpPlacemarks = wps.map((w, i) =>
-'    <Placemark>\n<name>'+esc(w.name)+'</name>\n<description>Tappa '+(i+1)+'</description>\n<Point>\n<coordinates>'+w.lon.toFixed(6)+','+w.lat.toFixed(6)+',0</coordinates>\n</Point>\n</Placemark>'
+// Crea KML con percorso stradale e waypoint
+const routeCoords = routePoints.map(p => p.lon.toFixed(6) + ',' + p.lat.toFixed(6) + ',0').join('\n          ');
+const wpPlacemarks = wps.map((w, i) => 
+'    <Placemark>\n      <name>'+esc(w.name)+'</name>\n      <description>Tappa '+(i+1)+'</description>\n      <Point>\n        <coordinates>'+w.lon.toFixed(6)+','+w.lat.toFixed(6)+',0</coordinates>\n      </Point>\n    </Placemark>'
 ).join('\n');
-const kml = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>'+esc(name)+'</name>\n<description>Percorso ricostruito da Google Maps</description>\n<Style id="routeStyle"><LineStyle><color>ff0000ff</color><width>5</width></LineStyle></Style>\n'+wpPlacemarks+'\n<Placemark>\n<name>'+esc(name)+' - Percorso</name>\n<styleUrl>#routeStyle</styleUrl>\n<LineString>\n<tessellate>1</tessellate>\n<altitudeMode>clampToGround</altitudeMode>\n<coordinates>\n'+routeCoords+'\n</coordinates>\n</LineString>\n</Placemark>\n</Document>\n</kml>';
+
+const kml = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n  <Document>\n    <name>'+esc(name)+'</name>\n    <description>Percorso ricostruito da Google Maps</description>\n    <Style id="routeStyle"><LineStyle><color>ff0000ff</color><width>5</width></LineStyle></Style>\n'+wpPlacemarks+'\n    <Placemark>\n      <name>'+esc(name)+' - Percorso</name>\n      <styleUrl>#routeStyle</styleUrl>\n      <LineString>\n        <tessellate>1</tessellate>\n        <altitudeMode>clampToGround</altitudeMode>\n        <coordinates>\n          '+routeCoords+'\n        </coordinates>\n      </LineString>\n    </Placemark>\n  </Document>\n</kml>';
+
+// Comprimi in KMZ usando JSZip
 const zip = new JSZip();
 zip.file('doc.kml', kml);
 const kmzBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 9 } });
 return kmzBlob;
 }
+
+// ── STATE ─────────────────────────────────────────────────────────
 function setProgress(p) { $('progBar').style.width = p + '%'; }
 function addLog(msg, t='dim') {
 const icons = { ok:'●', info:'◆', dim:'○' };
@@ -594,15 +619,18 @@ d.innerHTML = '<span class="d">'+icons[t]+'</span><span>'+msg+'</span>';
 $('logEl').appendChild(d);
 $('logEl').scrollTop = 9999;
 }
+// ── MAIN ────────────────────────────────────────────────────────
 async function go() {
 const urlVal  = $('urlIn').value.trim();
 const nameVal = $('nameIn').value.trim() || 'La mia rotta';
 if (!urlVal) { $('urlIn').focus(); return; }
+// ── URL breve: mostra avviso e stop ──────────────────────────
 if (isShortUrl(urlVal)) {
 $('shortWarn').classList.add('on');
 $('errorCard').classList.remove('on');
 $('progressCard').classList.remove('on');
 $('results').classList.remove('on');
+$('expandLink').href = 'https://www.expandurl.net/?url=' + encodeURIComponent(urlVal);
 $('shortWarn').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 return;
 }
@@ -644,6 +672,8 @@ if (i < parsed.stops.length - 1) await sleep(1150);
 setProgress(15 + Math.round(40 * (i+1) / parsed.stops.length));
 }
 if (wps.length < 2) throw new Error('Trovate meno di 2 tappe valide.\nControlla la URL e riprova.');
+
+// ██ RICOSTRUZIONE PERCORSO STRADALE (solo per KMZ) ██
 let routePoints = null;
 if (_currentFormat === 'kmz') {
 addLog('Ricostruzione percorso stradale via OSRM…', 'info');
@@ -651,15 +681,18 @@ setProgress(60);
 routePoints = await fetchOSRMRoute(wps);
 setProgress(85);
 }
+
+// Genera output in base al formato
 if (_currentFormat === 'kmz') {
 _output = await buildKMZ(wps, nameVal, routePoints);
 addLog('File KMZ generato · ' + routePoints.length + ' punti · compresso', 'ok');
-setProgress(100);
+setProgress(100); // ✅ CORREZIONE: Aggiunto per completare la barra
 } else {
 _output = buildGPX(wps, nameVal, routePoints);
 setProgress(100);
 addLog('File GPX generato · ' + wps.length + ' tappe · struttura &lt;rte&gt;', 'ok');
 }
+
 const list = $('wpList'); list.innerHTML = '';
 wps.forEach((w, i) => {
 const isF = i===0, isL = i===wps.length-1;
@@ -687,13 +720,16 @@ $('bIcon').textContent = '▶';
 $('bText').textContent = 'Converti';
 }
 }
+// ── DOWNLOAD ──────────────────────────────────────────────────────
 function download() {
 if (!_output) return;
 const fn = _name.replace(/\s+/g,'_') + '.' + _currentFormat;
 let blob;
 if (_currentFormat === 'kmz') {
+// _output è già un Blob per KMZ
 blob = _output;
 } else {
+// _output è stringa per GPX
 blob = new Blob([_output], { type: 'application/gpx+xml' });
 }
 const a = Object.assign(document.createElement('a'), {
@@ -703,17 +739,19 @@ download: fn
 document.body.appendChild(a); a.click();
 document.body.removeChild(a); URL.revokeObjectURL(a.href);
 }
+// ── SERVICE WORKER (Necessario per PWA) ─────────────────────────
 if ('serviceWorker' in navigator) {
 const sw = `
-const V='tt-gpx-kmz-v4-cloudflare-worker';
+const V='tt-gpx-kmz-v3-pwa-complete';
 self.addEventListener('install',  e => { e.waitUntil(caches.open(V).then(c=>c.addAll(['/']))); self.skipWaiting(); });
 self.addEventListener('activate', e => { e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k))))); self.clients.claim(); });
-self.addEventListener('fetch',    e => { if(e.request.url.includes('nominatim') || e.request.url.includes('osrm') || e.request.url.includes('workers.dev'))return; e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))); });
+self.addEventListener('fetch',    e => { if(e.request.url.includes('nominatim') || e.request.url.includes('osrm'))return; e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request))); });
 `;
 navigator.serviceWorker
 .register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'})))
 .catch(()=>{});
 }
+// Init
 updateHowto();
 </script>
 </body>
