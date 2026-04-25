@@ -183,6 +183,34 @@ font-size: 10px; cursor: pointer; display: none;
 align-items: center; justify-content: center;
 }
 .x-btn.on { display: flex; }
+/* ─── CLIPBOARD BUTTONS ██ */
+.clip-btn {
+position: absolute;
+top: 50%;
+transform: translateY(-50%);
+width: 22px;
+height: 22px;
+background: var(--border);
+border: none;
+border-radius: 50%;
+color: var(--text2);
+font-size: 10px;
+cursor: pointer;
+display: flex;
+align-items: center;
+justify-content: center;
+transition: background .2s, color .2s;
+}
+.clip-btn:hover {
+background: var(--accent);
+color: #fff;
+}
+.clip-btn:active {
+transform: translateY(-50%) scale(0.95);
+}
+/* Posizionamento pulsanti clipboard */
+#copyUrlBtn { right: 42px; }
+#pasteUrlBtn { right: 73px; }
 /* ─── BUTTONS ──────────────────────────────────────────── */
 .btn-convert {
 width: 100%;
@@ -378,6 +406,8 @@ oppure <code>.kmz</code> (percorso stradale ricostruito per Google Earth 3D).
 placeholder="https://www.google.com/maps/dir/Milano/Brescia/Verona"
 autocomplete="off" autocorrect="off" spellcheck="false" inputmode="url"/>
 <button class="x-btn" id="xUrl" onclick="clearField('urlIn','xUrl')" tabindex="-1">✕</button>
+<button class="clip-btn" id="copyUrlBtn" title="Copia URL" onclick="copyToClipboard('urlIn', 'copyUrlBtn')">📋</button>
+<button class="clip-btn" id="pasteUrlBtn" title="Incolla URL" onclick="pasteFromClipboard('urlIn')">📥</button>
 </div>
 </div>
 <button class="btn-convert" id="convertBtn" onclick="go()">
@@ -411,7 +441,7 @@ Seguendo questi 3 passi lo risolvi in pochi secondi:</p>
 <div class="sw-steps">
 <div class="sw-step"><div class="sw-num">1</div><div>Clicca il pulsante qui sotto — si apre <strong>expandurl.net</strong> con il tuo link già inserito</div></div>
 <div class="sw-step"><div class="sw-num">2</div><div>Su expandurl.net clicca <strong>Expand URL</strong> e copia la URL lunga che appare</div></div>
-<div class="sw-step"><div class="sw-num">3</div><div>Torna qui, <strong>incolla la URL completa</strong> e clicca Converti</div></div>
+<div class="sw-step"><div class="sw-num">3</div><div>Torna qui, <strong>incolla la URL completa</strong> (📥) e clicca Converti</div></div>
 </div>
 <a id="expandLink" href="#" target="_blank" rel="noopener" class="btn-expand">🔗&nbsp; Espandi URL</a>
 </div>
@@ -459,6 +489,52 @@ $(b).classList.toggle('on', this.value.length > 0);
 });
 });
 $('urlIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
+
+// ██ FUNZIONI CLIPBOARD ██
+async function copyToClipboard(inputId, btnId) {
+  const input = $(inputId);
+  const btn = $(btnId);
+  if (!input.value.trim()) return;
+  
+  try {
+    await navigator.clipboard.writeText(input.value.trim());
+    const original = btn.textContent;
+    btn.textContent = '✅';
+    btn.title = 'Copiato!';
+    setTimeout(() => {
+      btn.textContent = original;
+      btn.title = 'Copia URL';
+    }, 1500);
+  } catch (err) {
+    // Fallback per browser vecchi
+    input.select();
+    document.execCommand('copy');
+    const original = btn.textContent;
+    btn.textContent = '✅';
+    setTimeout(() => btn.textContent = original, 1500);
+  }
+}
+
+async function pasteFromClipboard(inputId) {
+  const input = $(inputId);
+  try {
+    const text = await navigator.clipboard.readText();
+    if (text.trim()) {
+      input.value = text.trim();
+      input.focus();
+      // Trigger input event per mostrare la X se necessario
+      input.dispatchEvent(new Event('input'));
+      // Se è una short URL, mostra il warning
+      if (isShortUrl(text.trim())) {
+        $('shortWarn').classList.add('on');
+        $('expandLink').href = 'https://www.expandurl.net/?url=' + encodeURIComponent(text.trim());
+      }
+    }
+  } catch (err) {
+    alert('❌ Impossibile leggere dagli appunti.\nPremi Ctrl+V (o Cmd+V) manualmente.');
+    input.focus();
+  }
+}
 
 // ██ GESTIONE FORMATO SELEZIONATO ██
 let _output = '', _name = '', _currentFormat = 'gpx';
@@ -585,9 +661,9 @@ function buildGPX(wps, name, routePoints = null) {
 // altrimenti usiamo i waypoint come rtept
 if (routePoints && routePoints.length > 0) {
 const trkpts = routePoints.map(p => '    <trkpt lat="'+p.lat.toFixed(6)+'" lon="'+p.lon.toFixed(6)+'"/>').join('\n');
-return '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 3.0"\nxmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>'+esc(name)+'</name></metadata>\n<rte>\n<name>'+esc(name)+'</name>\n'+wps.map(w => '  <rtept lat="'+w.lat.toFixed(6)+'" lon="'+w.lon.toFixed(6)+'">\n    <name>'+esc(w.name)+'</name>\n  </rtept>').join('\n')+'\n</rte>\n<trk>\n<name>'+esc(name)+' - Traccia</name>\n<trkseg>\n'+trkpts+'\n</trkseg>\n</trk>\n</gpx>';
+return '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 3.0"\nxmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>'+esc(name)+'</name></metadata>\n<rte>\n<name>'+esc(name)+'</name>\n'+wps.map(w => '  <rtept lat="'+w.lat.toFixed(6)+'" lon="'+w.lon.toFixed(6)+'">\n<name>'+esc(w.name)+'</name>\n</rtept>').join('\n')+'\n</rte>\n<trk>\n<name>'+esc(name)+' - Traccia</name>\n<trkseg>\n'+trkpts+'\n</trkseg>\n</trk>\n</gpx>';
 } else {
-const pts = wps.map(w => '  <rtept lat="'+w.lat.toFixed(6)+'" lon="'+w.lon.toFixed(6)+'">\n    <name>'+esc(w.name)+'</name>\n  </rtept>').join('\n');
+const pts = wps.map(w => '  <rtept lat="'+w.lat.toFixed(6)+'" lon="'+w.lon.toFixed(6)+'">\n<name>'+esc(w.name)+'</name>\n</rtept>').join('\n');
 return '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 3.0"\nxmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>'+esc(name)+'</name></metadata>\n<rte>\n<name>'+esc(name)+'</name>\n'+pts+'\n</rte>\n</gpx>';
 }
 }
@@ -595,13 +671,11 @@ return '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomT
 // ██ KMZ GENERATOR (con percorso stradale) ██
 async function buildKMZ(wps, name, routePoints) {
 // Crea KML con percorso stradale e waypoint
-const routeCoords = routePoints.map(p => p.lon.toFixed(6) + ',' + p.lat.toFixed(6) + ',0').join('\n          ');
-const wpPlacemarks = wps.map((w, i) => 
-'    <Placemark>\n      <name>'+esc(w.name)+'</name>\n      <description>Tappa '+(i+1)+'</description>\n      <Point>\n        <coordinates>'+w.lon.toFixed(6)+','+w.lat.toFixed(6)+',0</coordinates>\n      </Point>\n    </Placemark>'
+const routeCoords = routePoints.map(p => p.lon.toFixed(6) + ',' + p.lat.toFixed(6) + ',0').join('\n');
+const wpPlacemarks = wps.map((w, i) =>
+'    <Placemark>\n<name>'+esc(w.name)+'</name>\n<description>Tappa '+(i+1)+'</description>\n<Point>\n<coordinates>'+w.lon.toFixed(6)+','+w.lat.toFixed(6)+',0</coordinates>\n</Point>\n</Placemark>'
 ).join('\n');
-
-const kml = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n  <Document>\n    <name>'+esc(name)+'</name>\n    <description>Percorso ricostruito da Google Maps</description>\n    <Style id="routeStyle"><LineStyle><color>ff0000ff</color><width>5</width></LineStyle></Style>\n'+wpPlacemarks+'\n    <Placemark>\n      <name>'+esc(name)+' - Percorso</name>\n      <styleUrl>#routeStyle</styleUrl>\n      <LineString>\n        <tessellate>1</tessellate>\n        <altitudeMode>clampToGround</altitudeMode>\n        <coordinates>\n          '+routeCoords+'\n        </coordinates>\n      </LineString>\n    </Placemark>\n  </Document>\n</kml>';
-
+const kml = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>'+esc(name)+'</name>\n<description>Percorso ricostruito da Google Maps</description>\n<Style id="routeStyle"><LineStyle><color>ff0000ff</color><width>5</width></LineStyle></Style>\n'+wpPlacemarks+'\n<Placemark>\n<name>'+esc(name)+' - Percorso</name>\n<styleUrl>#routeStyle</styleUrl>\n<LineString>\n<tessellate>1</tessellate>\n<altitudeMode>clampToGround</altitudeMode>\n<coordinates>\n'+routeCoords+'\n</coordinates>\n</LineString>\n</Placemark>\n</Document>\n</kml>';
 // Comprimi in KMZ usando JSZip
 const zip = new JSZip();
 zip.file('doc.kml', kml);
@@ -619,6 +693,7 @@ d.innerHTML = '<span class="d">'+icons[t]+'</span><span>'+msg+'</span>';
 $('logEl').appendChild(d);
 $('logEl').scrollTop = 9999;
 }
+
 // ── MAIN ────────────────────────────────────────────────────────
 async function go() {
 const urlVal  = $('urlIn').value.trim();
@@ -720,6 +795,7 @@ $('bIcon').textContent = '▶';
 $('bText').textContent = 'Converti';
 }
 }
+
 // ── DOWNLOAD ──────────────────────────────────────────────────────
 function download() {
 if (!_output) return;
@@ -739,6 +815,7 @@ download: fn
 document.body.appendChild(a); a.click();
 document.body.removeChild(a); URL.revokeObjectURL(a.href);
 }
+
 // ── SERVICE WORKER (Necessario per PWA) ─────────────────────────
 if ('serviceWorker' in navigator) {
 const sw = `
@@ -751,6 +828,7 @@ navigator.serviceWorker
 .register(URL.createObjectURL(new Blob([sw],{type:'application/javascript'})))
 .catch(()=>{});
 }
+
 // Init
 updateHowto();
 </script>
