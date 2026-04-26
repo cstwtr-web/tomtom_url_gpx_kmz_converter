@@ -414,24 +414,24 @@ $('expandedUrlIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e
 // ██ GESTIONE FORMATO SELEZIONATO ██
 let _output = '', _name = '', _currentFormat = 'gpx';
 function setFormat(fmt) {
-  _currentFormat = fmt;
-  document.querySelectorAll('.fmt-btn').forEach(b => b.classList.toggle('active', b.dataset.fmt === fmt));
-  updateHowto();
-  if (_output) {
-    $('dlLabel').textContent = 'Scarica  ' + _name.replace(/\s+/g,'_') + '.' + _currentFormat;
-  }
+_currentFormat = fmt;
+document.querySelectorAll('.fmt-btn').forEach(b => b.classList.toggle('active', b.dataset.fmt === fmt));
+updateHowto();
+if (_output) {
+$('dlLabel').textContent = 'Scarica  ' + _name.replace(/\s+/g,'_') + '.' + _currentFormat;
+}
 }
 // ██ RILEVAMENTO URL BREVE IN TEMPO REALE ██
 $('urlIn').addEventListener('input', function() {
-  const isShort = isShortUrl(this.value.trim());
-  $('shortUrlArea').style.display = isShort ? 'block' : 'none';
-  if(isShort && !this.value.trim().endsWith('/')) {
-     $('expandedUrlIn').focus();
-  }
+const isShort = isShortUrl(this.value.trim());
+$('shortUrlArea').style.display = isShort ? 'block' : 'none';
+if(isShort && !this.value.trim().endsWith('/')) {
+$('expandedUrlIn').focus();
+}
 });
 function openExpander() {
-  const url = $('urlIn').value.trim();
-  if(url) window.open('https://www.expandurl.net/?url=' + encodeURIComponent(url), '_blank');
+const url = $('urlIn').value.trim();
+if(url) window.open('https://www.expandurl.net/?url=' + encodeURIComponent(url), '_blank');
 }
 function updateHowto() {
 const isGpx = _currentFormat === 'gpx';
@@ -449,7 +449,7 @@ $('howtoContent').innerHTML = isGpx ? `
 async function geocode(q) {
 const r = await fetch(
 'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q) +
-'&format=json&limit=1&accept-language=it,en',
+'&format=json&limit=1&accept-language=it,en&countrycodes=it',
 { headers: { 'User-Agent': 'TomTomRouteConverter/3.0' } }
 );
 if (!r.ok) throw new Error('Errore di rete: "' + q + '"');
@@ -487,79 +487,13 @@ return stops;
 function isShortUrl(url) {
 return /maps\.app\.goo\.gl|goo\.gl\/maps/i.test(url);
 }
-
-// ██ CORREZIONE: ESTRAZIONE COORDINATE DAI PARAMETRI GOOGLE MAPS ██
-function extractCoordsFromDataParam(url) {
-  const coords = [];
-  // Pattern Google Maps: !3d[lat]!4d[lng] ripetuto per ogni tappa
-  const re = /!3d(-?\d+\.\d+)!4d(-?\d+\.\d+)/g;
-  let m;
-  while ((m = re.exec(url)) !== null) {
-    coords.push({ 
-      lat: parseFloat(m[1]), 
-      lon: parseFloat(m[2]),
-      used: false 
-    });
-  }
-  return coords;
-}
-
-// ██ CORREZIONE: PARSING WAYPOINTS CON PRIORITÀ ASSOLUTA ALLE COORDINATE EMBEDDING ██
 function extractStops(raw) {
-  let url = raw.trim();
-  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-  
-  // 1. Estrai nomi dal path (come prima)
-  let stops = null;
-  if (url.includes('maps/dir/')) {
-    const m = url.match(/maps\/dir\/(.+?)(?:\/(?:@[^/]+)?$|$)/);
-    if (m) {
-      stops = m[1].split('/').map(s => decodeURIComponent(s.replace(/\+/g,' ')).trim()).filter(s => s && !s.startsWith('@'));
-    }
-  }
-  if (url.includes('origin=')) {
-    try {
-      const u = new URL(url), o = u.searchParams.get('origin'), d = u.searchParams.get('destination'), w = u.searchParams.get('waypoints');
-      if (o && d) {
-        stops = [o]; if (w) stops.push(...w.split('|').filter(Boolean)); stops.push(d);
-      }
-    } catch(e) {}
-  }
-  if (!stops || stops.length < 2) return null;
-  
-  // 2. Estrai coordinate embedded dai parametri data= o dalla URL stessa
-  const embeddedCoords = extractCoordsFromDataParam(url);
-  
-  // 3. Se abbiamo coordinate embedded, le usiamo SEMPRE in priorità
-  if (embeddedCoords.length > 0) {
-    addLog('Trovate ' + embeddedCoords.length + ' coordinate nella URL - le userò invece del geocoding', 'info');
-    
-    return {
-      stops: stops.map((name, i) => {
-        // Se il nome è già una coordinata, la teniamo
-        const cd = coordStr(name);
-        if (cd) return cd;
-        
-        // Altrimenti, se c'è una coordinata embeddata per questa posizione, la usiamo
-        if (i < embeddedCoords.length) {
-          return { 
-            lat: embeddedCoords[i].lat, 
-            lon: embeddedCoords[i].lon, 
-            name: name 
-          };
-        }
-        
-        // Fallback: geocoding (ma non dovrebbe succedere)
-        return name;
-      }),
-      src: 'Google Maps (coordinate da URL)',
-      hasEmbeddedCoords: true
-    };
-  }
-  
-  return { stops, src: 'Google Maps', hasEmbeddedCoords: false };
+let url = raw.trim();
+if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+if (url.includes('maps/dir/'))    { const s = parseDir(url);   if (s && s.length >= 2) return { stops: s, src: 'Google Maps' }; }
+if (url.includes('origin='))      { const s = parseQuery(url); if (s && s.length >= 2) return { stops: s, src: 'Google Maps' }; }
+return null;
 }
-
 // ██ ALGORITMO DOUGLAS-PEUCKER (semplificazione polyline) ██
 function douglasPeucker(points, tolerance) {
 if (points.length <= 2) return points;
@@ -641,13 +575,13 @@ const nameVal = $('nameIn').value.trim() || 'La mia rotta';
 if (!urlVal) { $('urlIn').focus(); return; }
 // Se è breve, usiamo il campo espanso
 if (isShortUrl(urlVal)) {
-  urlVal = $('expandedUrlIn').value.trim();
-  if (!urlVal) {
-    $('expandedUrlIn').focus();
-    $('expandedUrlIn').style.borderColor = 'var(--red)';
-    setTimeout(() => $('expandedUrlIn').style.borderColor = '', 2000);
-    return;
-  }
+urlVal = $('expandedUrlIn').value.trim();
+if (!urlVal) {
+$('expandedUrlIn').focus();
+$('expandedUrlIn').style.borderColor = 'var(--red)';
+setTimeout(() => $('expandedUrlIn').style.borderColor = '', 2000);
+return;
+}
 }
 $('progressCard').classList.remove('on');
 $('errorCard').classList.remove('on');
@@ -668,16 +602,6 @@ setProgress(15);
 const wps = [];
 for (let i = 0; i < parsed.stops.length; i++) {
 const s = parsed.stops[i];
-
-// ✅ FIX CRUCIALE: Gestisci il caso in cui s è già un oggetto coordinate
-if (typeof s === 'object' && s !== null && s.lat && s.lon) {
-    wps.push(s);
-    addLog('Tappa ' + (i+1) + '/' + parsed.stops.length + ' · ' + s.name, 'dim');
-    addLog('↳ coordinate già pronte: ' + s.lat.toFixed(4) + ', ' + s.lon.toFixed(4), 'info');
-    continue; // Salta il resto del ciclo per questa tappa
-}
-
-// Se arriviamo qui, s è una stringa
 addLog('Tappa ' + (i+1) + '/' + parsed.stops.length + ' · ' + (s.length > 42 ? s.slice(0,42)+'…' : s), 'dim');
 const cd = coordStr(s);
 if (cd) {
@@ -687,10 +611,6 @@ addLog('↳ coordinate: ' + cd.lat.toFixed(4) + ', ' + cd.lon.toFixed(4), 'info'
 const ex = blobCoords(s);
 if (ex) { wps.push(ex); addLog('↳ estratte dal blob: ' + ex.lat.toFixed(4) + ', ' + ex.lon.toFixed(4), 'info'); }
 else addLog('↳ blob non decodificabile — tappa saltata', 'dim');
-} else if (parsed.hasEmbeddedCoords) {
-  // Se abbiamo coordinate embeddate, NON fare geocoding - salta questa tappa
-  addLog('↳ SKIP: userò coordinate da URL invece di geocoding', 'info');
-  continue;
 } else {
 const g = await geocode(s);
 wps.push(g);
@@ -745,7 +665,7 @@ $('bIcon').textContent = '▶';
 $('bText').textContent = 'Converti';
 }
 }
-// ── DOWNLOAD ─────────────────────────────────────────────────────
+// ── DOWNLOAD ──────────────────────────────────────────────────────
 function download() {
 if (!_output) return;
 const fn = _name.replace(/\s+/g,'_') + '.' + _currentFormat;
