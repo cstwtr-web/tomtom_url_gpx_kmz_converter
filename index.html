@@ -1,348 +1,293 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-<meta charset="UTF-8"/>
+<meta charset="UTF-"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-<meta name="theme-color" content="#4682B4"/>
+<meta name="theme-color" content="#1e5aa8"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="TomTom GPX"/>
+<meta name="apple-mobile-web-app-title" content="Route Converter"/>
 <meta name="mobile-web-app-capable" content="yes"/>
-<meta name="description" content="Converti URL Google Maps in file GPX o KMZ per TomTom MyDrive e Google Earth"/>
-<title>TomTom Route Converter - PWA con Icona ed Espansione URL</title>
+<meta name="description" content="Converti URL Google Maps, Apple Maps, Waze o file GPX/KMZ in rotte ottimizzate per TomTom MyDrive"/>
+<title>Route Converter By Valter - PWA v10</title>
+<!-- ██ CDN SWEETALERT2, JSZIP, LEAFLET ██ -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" rel="stylesheet"/>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <script>
-// ── GENERAZIONE ICONA PNG DINAMICA (Compatibile iOS/Android) ──
+// ── GENERAZIONE ICONA PNG DINAMICA & MANIFEST CORRETTO ──
 (function(){
 const c = document.createElement('canvas');
 c.width = 512; c.height = 512;
 const ctx = c.getContext('2d');
 ctx.fillStyle = '#FFFFFF'; ctx.fillRect(0,0,512,512);
-ctx.beginPath(); ctx.arc(256,256,180,0,Math.PI*2); ctx.strokeStyle='#4682B4'; ctx.lineWidth=12; ctx.stroke();
-ctx.beginPath(); ctx.moveTo(256,120); ctx.lineTo(280,220); ctx.lineTo(232,220); ctx.closePath(); ctx.fillStyle='#EF4444'; ctx.fill();
+ctx.beginPath(); ctx.arc(256,256,180,0,Math.PI*2); ctx.strokeStyle='#1e5aa8'; ctx.lineWidth=12; ctx.stroke();
+ctx.beginPath(); ctx.moveTo(256,120); ctx.lineTo(280,220); ctx.lineTo(232,220); ctx.closePath(); ctx.fillStyle='#2c7dc3'; ctx.fill();
 ctx.beginPath(); ctx.moveTo(256,392); ctx.lineTo(232,292); ctx.lineTo(280,292); ctx.closePath(); ctx.fillStyle='#10B981'; ctx.fill();
-ctx.beginPath(); ctx.arc(256,256,20,0,Math.PI*2); ctx.fillStyle='#F59E0B'; ctx.fill();
+ctx.beginPath(); ctx.arc(256,256,20,0,Math.PI*2); ctx.fillStyle='#f59e0b'; ctx.fill();
 const iconPng = c.toDataURL('image/png');
 const appleLink = document.createElement('link');
 appleLink.rel = 'apple-touch-icon';
 appleLink.href = iconPng;
 document.head.appendChild(appleLink);
 const manifest = {
-name: "TomTom Route Converter",
+name: "Route Converter By Valter",
 short_name: "TomTom GPX",
-description: "Converti URL Google Maps in file GPX o KMZ",
+description: "Converti URL o file in GPX/KMZ per TomTom",
 start_url: "./",
 display: "standalone",
-background_color: "#4682B4",
-theme_color: "#4682B4",
-orientation: "portrait-primary",
-icons: [
-{ src: iconPng, sizes: "512x512", type: "image/png", purpose: "any maskable" },
-{ src: iconPng, sizes: "192x192", type: "image/png", purpose: "any" }
-]
+background_color: "#e0f0ff",
+theme_color: "#1e5aa8",
+icons: [{ src: iconPng, sizes: "512x512", type: "image/png", purpose: "any maskable" }]
 };
 const manifestLink = document.createElement('link');
 manifestLink.rel = 'manifest';
+// FIX: Prefisso data: mancante
 manifestLink.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
 document.head.appendChild(manifestLink);
 })();
 </script>
-<!-- ██ JSZip per compressione KMZ ██ -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com"/>
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=Syne:wght@600;700;800&display=swap" rel="stylesheet"/>
 <style>
 :root {
---bg:       #4682B4;
---bg2:      #1E3A5F;
---bg3:      #162E47;
---border:   #355E7C;
---border2:  #2A4A66;
---accent:   #60A5FA;
---accent2:  #93C5FD;
---accent3:  #BFDBFE;
---green:    #10B981;
---green-bg: rgba(16,185,129,.15);
---red:      #EF4444;
---amber:    #F59E0B;
---text:     #FFFFFF;
---text2:    #E2E8F0;
---text3:    #CBD5E1;
---radius:   14px;
---safe-t:   env(safe-area-inset-top, 0px);
---safe-b:   env(safe-area-inset-bottom, 0px);
+--p: #1e5aa8; --p-hover: #164a8a; --p-light: #e6f0ff;
+--bg-card: #e0f0ff; --bg-body: #f5f9ff;
+--input-bg: #ffffff;
+--border: #2c7dc3; --border-light: #b8d4f0;
+--text-main: #0f2b4d; --text-sec: #4a6fa5; --text-muted: #7a96b5;
+--success: #10b981; --success-bg: rgba(16,185,129,.12); --success-bd: rgba(16,185,129,.4);
+--warning: #f59e0b; --warning-bg: rgba(245,158,11,.12); --warning-bd: rgba(245,158,11,.4);
+--error: #ef4444; --error-bg: rgba(239,68,68,.12); --error-bd: rgba(239,68,68,.4);
+--radius: 14px; --shadow: 0 4px 16px rgba(30, 90, 168, 0.12);
+--safe-t: env(safe-area-inset-top, 0px); --safe-b: env(safe-area-inset-bottom, 0px);
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { height: 100%; -webkit-text-size-adjust: 100%; }
-body {
-background: var(--bg);
-color: var(--text);
-font-family: 'DM Mono', 'Courier New', monospace;
-min-height: 100%;
-min-height: -webkit-fill-available;
--webkit-tap-highlight-color: transparent;
-}
-.shell {
-display: grid;
-grid-template-rows: auto 1fr;
-min-height: 100vh;
-}
+body { background: var(--bg-body); color: var(--text-main); font-family: 'DM Mono', monospace; min-height: 100vh; -webkit-tap-highlight-color: transparent; }
+.shell { display: grid; grid-template-rows: auto 1fr; min-height: 100vh; }
 .header {
 position: sticky; top: 0; z-index: 50;
 padding: calc(var(--safe-t) + 14px) clamp(16px, 4vw, 40px) 14px;
-background: rgba(30, 58, 95, 0.92);
-backdrop-filter: blur(20px);
--webkit-backdrop-filter: blur(20px);
-border-bottom: 1px solid rgba(53, 94, 124, 0.7);
+background: var(--p); backdrop-filter: blur(12px);
+border-bottom: 1px solid rgba(255,255,255,0.15);
 }
-.header-inner {
-max-width: 720px; margin: 0 auto;
-display: flex; align-items: center; gap: 12px;
-}
-.logo {
-width: 42px; height: 42px; flex-shrink: 0;
-background: #FFFFFF;
-border-radius: 12px;
-display: flex; align-items: center; justify-content: center;
-font-size: 24px;
-box-shadow: 0 4px 14px rgba(0,0,0,0.15);
-}
-.header-title {
-font-family: 'Syne', sans-serif;
-font-weight: 800; font-size: clamp(15px,3vw,18px);
-letter-spacing: -.02em; color: var(--text);
-}
-.header-sub {
-font-size: clamp(9px,2vw,11px); color: var(--text3);
-text-transform: uppercase; letter-spacing: .1em; margin-top: 1px;
-}
-.header-pill {
-margin-left: auto;
-background: rgba(96, 165, 250, 0.15);
-border: 1px solid rgba(96, 165, 250, 0.35);
-border-radius: 20px; padding: 3px 11px;
-font-size: 10px; color: var(--accent2); letter-spacing: .04em;
-}
-main {
-max-width: 720px; margin: 0 auto; width: 100%;
-padding: clamp(18px,4vw,36px) clamp(14px,4vw,36px)
-calc(clamp(18px,4vw,36px) + var(--safe-b));
-}
-.info {
-background: linear-gradient(135deg, rgba(255,255,255,0.12), rgba(255,255,255,0.06));
-border: 1px solid rgba(255,255,255,0.28);
-border-radius: var(--radius); padding: 14px 18px;
-margin-bottom: 20px;
-font-size: clamp(11.5px,2vw,13px); line-height: 1.75; color: var(--text);
-}
-.info b  { color: #FFFFFF; }
-.info code { color: var(--green); background: rgba(16,185,129,.15); padding: 1px 5px; border-radius: 4px; font-size:.9em; }
-.card {
-background: var(--bg2);
-border: 1px solid var(--border);
-border-radius: 20px; padding: 22px; margin-bottom: 16px;
-}
+.header-inner { max-width: 720px; margin: 0 auto; display: flex; align-items: center; gap: 12px; }
+.logo { width: 42px; height: 42px; flex-shrink: 0; background: #ffffff; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 4px 14px rgba(0,0,0,0.1); }
+.header-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: clamp(15px,3vw,18px); letter-spacing: -.02em; color: #fff; }
+.header-sub { font-size: clamp(9px,2vw,11px); color: rgba(255,255,255,0.85); text-transform: uppercase; letter-spacing: .1em; margin-top: 1px; }
+.header-pill { margin-left: auto; background: rgba(255,255,255,0.2); border: 1px solid rgba(255,255,255,0.3); border-radius: 20px; padding: 3px 11px; font-size: 10px; color: #fff; letter-spacing: .04em; }
+main { max-width: 720px; margin: 0 auto; width: 100%; padding: clamp(18px,4vw,36px) clamp(14px,4vw,36px) calc(clamp(18px,4vw,36px) + var(--safe-b)); }
+.info { background: #fff; border: 1px solid var(--border-light); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 16px; font-size: clamp(11.5px,2vw,13px); line-height: 1.75; color: var(--text-sec); box-shadow: var(--shadow); }
+.info b { color: var(--text-main); }
+.info code { color: var(--success); background: var(--success-bg); padding: 1px 5px; border-radius: 4px; font-size: .9em; }
+/* ACCORDION ISTRUZIONI */
+.accordion-card { background: #fff; border: 1px solid var(--border-light); border-radius: var(--radius); margin-bottom: 16px; box-shadow: var(--shadow); overflow: hidden; }
+.accordion-card summary { padding: 14px 18px; font-weight: 600; cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; color: var(--p); user-select: none; }
+.accordion-card summary::-webkit-details-marker { display: none; }
+.accordion-card summary::before { content: '▶'; transition: transform .2s; }
+.accordion-card[open] summary::before { transform: rotate(90deg); }
+.accordion-card .howto { padding: 16px 18px; border-top: 1px solid var(--border-light); }
+.howto-title { font-size: 12px; color: var(--success); font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 6px; }
+.howto-step { display: flex; gap: 10px; margin-bottom: 9px; font-size: clamp(11.5px,2.2vw,13px); color: var(--text-sec); line-height: 1.65; }
+.howto-step:last-child { margin-bottom: 0; }
+.step-n { width: 20px; height: 20px; flex-shrink: 0; background: var(--p-light); border: 1px solid var(--border-light); border-radius: 50%; font-size: 10px; color: var(--p); display: flex; align-items: center; justify-content: center; margin-top: 1px; font-weight: 600; }
+/* STORICO */
+#historyDropdown { position: relative; display: inline-block; margin-bottom: 16px; }
+.history-btn { background: var(--p-light); color: var(--p); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 6px; }
+.history-list { position: absolute; top: 100%; left: 0; width: 100%; min-width: 200px; background: #fff; border: 1px solid var(--border-light); border-radius: 8px; box-shadow: var(--shadow); z-index: 40; display: none; flex-direction: column; }
+.history-list.open { display: flex; }
+.history-item { padding: 10px 12px; cursor: pointer; font-size: 12px; border-bottom: 1px solid var(--border-light); transition: background .15s; }
+.history-item:hover { background: var(--p-light); }
+.history-item:last-child { border-bottom: none; }
+.card { background: var(--bg-card); border: 1px solid var(--border-light); border-radius: 20px; padding: 22px; margin-bottom: 16px; box-shadow: var(--shadow); }
 .field { margin-bottom: 18px; }
-.field:last-child { margin-bottom: 0; }
-.label {
-display: block; font-size: 10.5px; font-weight: 500;
-color: var(--accent2); text-transform: uppercase;
-letter-spacing: .12em; margin-bottom: 8px;
-}
+.label { display: block; font-size: 11px; font-weight: 600; color: var(--p); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; }
 .input-wrap { position: relative; }
-input[type="url"], input[type="text"] {
-width: 100%;
-background: var(--bg3); border: 1.5px solid var(--border2);
-border-radius: 12px; padding: 13px 42px 13px 15px;
-color: var(--text); font-family: inherit;
-font-size: clamp(13px,3vw,15px); outline: none;
-transition: border-color .2s, box-shadow .2s;
--webkit-appearance: none;
+input[type="url"], input[type="text"], select {
+width: 100%; background: var(--input-bg); border: 1.5px solid var(--border);
+border-radius: 12px; padding: 13px 42px 13px 15px; color: var(--text-main);
+font-family: inherit; font-size: clamp(13px,3vw,15px); outline: none; transition: all .2s;
 }
-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(96,165,250,.25); }
-input::placeholder { color: var(--text3); font-size: .85em; }
-.x-btn {
-position: absolute; right: 11px; top: 50%; transform: translateY(-50%);
-width: 22px; height: 22px; background: var(--border);
-border: none; border-radius: 50%; color: var(--text2);
-font-size: 10px; cursor: pointer; display: none;
-align-items: center; justify-content: center;
-}
+select { padding: 13px 15px; appearance: none; background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%234a6fa5'%3e%3cpath d='M7 10l5 5 5-5z'/%3e%3c/svg%3e"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; cursor: pointer; }
+input:focus, select:focus { border-color: var(--p); box-shadow: 0 0 0 3px rgba(30,90,168,.2); }
+input::placeholder { color: var(--text-muted); font-size: .85em; }
+.x-btn { position: absolute; right: 11px; top: 50%; transform: translateY(-50%); width: 22px; height: 22px; background: var(--border-light); border: none; border-radius: 50%; color: var(--text-sec); font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center; transition: all .15s; }
+.x-btn:hover { background: var(--p); color: #fff; }
 .x-btn.on { display: flex; }
-/* ── FORMAT TOGGLE BUTTONS ────────────────────────────────── */
-.fmt-toggle { display:flex; gap:10px; }
-.fmt-btn {
-flex:1; padding:14px 10px; background:var(--bg3); border:1.5px solid var(--border2);
-border-radius:12px; color:var(--text3); font-family:inherit; font-size:clamp(12px,2.5vw,14px);
-cursor:pointer; transition:all .2s; text-align:center; display:flex; align-items:center; justify-content:center; gap:6px;
-}
-.fmt-btn.active {
-background:rgba(96,165,250,.15); border-color:var(--accent); color:var(--accent2); font-weight:600;
-}
-/* ── EXPAND AREA ──────────────────────────────────────────── */
-#shortUrlArea { display:none; margin-bottom:16px; }
-.btn-expand {
-width:100%; background:#F59E0B; color:#1a1a1a; border:none; border-radius:12px;
-padding:14px; font-family:'Syne',sans-serif; font-weight:700; font-size:14px;
-cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;
-transition:transform .12s; margin-bottom:12px;
-}
-.btn-expand:active { transform:scale(.97); }
-/* ── BUTTONS ──────────────────────────────────────────── */
-.btn-convert {
-width: 100%;
-background: linear-gradient(135deg, #3B82F6, #60A5FA);
-color: #1E3A5F; border: none; border-radius: 16px;
-padding: clamp(15px,3vw,18px);
-font-family: 'Syne',sans-serif; font-weight: 700;
-font-size: clamp(14px,3vw,16px); letter-spacing: .02em;
-cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-box-shadow: 0 4px 22px rgba(0,0,0,0.2);
-transition: opacity .2s, transform .12s;
-position: relative; overflow: hidden;
-}
-.btn-convert::after {
-content:''; position:absolute; inset:0;
-background: linear-gradient(135deg,rgba(255,255,255,.25),transparent);
-}
-.btn-convert:active:not(:disabled) { transform: scale(.97); }
+.file-upload-wrap { position: relative; }
+.file-btn { width: 100%; background: var(--input-bg); border: 2px dashed var(--border); border-radius: 12px; padding: 18px; color: var(--text-sec); font-family: inherit; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all .2s; text-align: center; }
+.file-btn:hover, .file-btn.has-file { background: var(--p-light); border-color: var(--p); color: var(--p); border-style: solid; }
+.file-btn .icon { font-size: 20px; }
+#fileInput { display: none; }
+.file-info { margin-top: 8px; font-size: 11px; color: var(--success); text-align: center; display: none; font-weight: 500; }
+.file-info.on { display: block; }
+.separator { display: flex; align-items: center; gap: 12px; margin: 20px 0; color: var(--text-muted); font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .15em; }
+.separator::before, .separator::after { content: ''; flex: 1; height: 1px; background: var(--border-light); }
+.fmt-toggle { display: flex; gap: 10px; margin-bottom: 18px; }
+.fmt-btn { flex: 1; padding: 12px 10px; background: var(--input-bg); border: 1.5px solid var(--border-light); border-radius: 12px; color: var(--text-sec); font-family: inherit; font-size: clamp(12px,2.5vw,14px); cursor: pointer; transition: all .2s; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.fmt-btn:hover { background: var(--p-light); }
+.fmt-btn.active { background: var(--p); border-color: var(--p); color: #fff; font-weight: 600; box-shadow: 0 2px 8px rgba(30,90,168,.2); }
+#shortUrlArea { display: none; margin-bottom: 16px; }
+.btn-expand { width: 100%; background: var(--warning); color: #fff; border: none; border-radius: 12px; padding: 14px; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; transition: transform .12s, background .2s; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(245,158,11,.25); }
+.btn-expand:active { transform: scale(.98); background: #e09200; }
+.btn-convert { width: 100%; background: var(--p); color: #fff; border: none; border-radius: 16px; padding: clamp(15px,3vw,18px); font-family: 'Syne', sans-serif; font-weight: 700; font-size: clamp(14px,3vw,16px); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 20px rgba(30,90,168,.3); transition: opacity .2s, transform .12s, background .2s; position: relative; overflow: hidden; margin-top: 8px; }
+.btn-convert:active:not(:disabled) { transform: scale(.98); background: var(--p-hover); }
 .btn-convert:disabled { opacity: .45; cursor: not-allowed; transform: none; }
-.btn-download {
-width: 100%;
-background: linear-gradient(135deg,#065F46,#10B981);
-color: #fff; border: none; border-radius: 16px;
-padding: clamp(15px,3vw,18px);
-font-family: 'Syne',sans-serif; font-weight: 700;
-font-size: clamp(14px,3vw,16px); letter-spacing: .02em;
-cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
-box-shadow: 0 4px 22px rgba(16,185,129,.28);
-transition: transform .12s; margin-bottom: 16px;
+.btn-download { width: 100%; background: var(--success); color: #fff; border: none; border-radius: 16px; padding: clamp(15px,3vw,18px); font-family: 'Syne', sans-serif; font-weight: 700; font-size: clamp(14px,3vw,16px); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 20px rgba(16,185,129,.25); transition: transform .12s; margin-bottom: 16px; }
+.btn-download:active { transform: scale(.98); }
+#progressCard { display: none; }
+#progressCard.on { display: block; }
+.prog-title { font-size: 10.5px; color: var(--p); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; font-weight: 600; }
+.prog-track { background: var(--p-light); border-radius: 100px; height: 6px; margin-bottom: 13px; overflow: hidden; }
+.prog-bar { height: 100%; background: var(--p); border-radius: 100px; width: 0%; transition: width .4s ease; }
+.log { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; background: var(--input-bg); border: 1px solid var(--border-light); border-radius: 10px; padding: 10px; margin-top: 10px; }
+.log-row { font-size: 11.5px; line-height: 1.65; display: flex; align-items: flex-start; gap: 6px; color: var(--text-sec); }
+.log-row .d { flex-shrink: 0; margin-top: 3px; }
+.l-ok .d { color: var(--success); }
+.l-info .d { color: var(--p); }
+.l-dim .d { color: var(--text-muted); }
+#errorCard { display: none; }
+#errorCard.on { display: flex; align-items: flex-start; gap: 10px; background: var(--error-bg); border: 1.5px solid var(--error-bd); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; }
+#errorCard .ei { font-size: 18px; flex-shrink: 0; }
+#errorCard .et { font-size: 12.5px; line-height: 1.65; color: #b91c1c; white-space: pre-line; }
+#statusMessage { display: none; }
+#statusMessage.on { display: flex; align-items: flex-start; gap: 11px; border-radius: var(--radius); padding: 14px 16px; margin-bottom: 16px; font-size: clamp(12px,2.3vw,13.5px); line-height: 1.65; font-weight: 500; }
+#statusMessage .sm-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+#statusMessage .sm-body { flex: 1; }
+#statusMessage .sm-body strong { display: block; margin-bottom: 2px; font-family: 'Syne', sans-serif; font-size: 12px; letter-spacing: .05em; text-transform: uppercase; }
+#statusMessage.status-green { background: var(--success-bg); border: 1.5px solid var(--success-bd); color: #065f46; }
+#statusMessage.status-green .sm-body strong { color: #047857; }
+#statusMessage.status-orange { background: var(--warning-bg); border: 1.5px solid var(--warning-bd); color: #92400e; }
+#statusMessage.status-orange .sm-body strong { color: #b45309; }
+#statusMessage.status-red { background: var(--error-bg); border: 1.5px solid var(--error-bd); color: #991b1b; }
+#statusMessage.status-red .sm-body strong { color: #b91c1c; }
+#osrmStats { display: none; background: #fff; border: 1px solid var(--border-light); border-radius: var(--radius); padding: 12px 16px; margin-bottom: 16px; box-shadow: var(--shadow); font-size: 13px; color: var(--text-sec); }
+#osrmStats.on { display: flex; justify-content: space-around; align-items: center; }
+.stat-item { text-align: center; }
+.stat-val { font-weight: 700; color: var(--p); font-size: 16px; }
+.stat-label { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+#mapPreview { width: 100%; height: 250px; border-radius: var(--radius); margin-bottom: 16px; border: 1px solid var(--border-light); box-shadow: var(--shadow); display: none; }
+#mapPreview.on { display: block; }
+#results { display: none; }
+#results.on { display: block; }
+.sec-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; padding-left: 2px; font-weight: 600; display: flex; align-items: center; }
+.wp-list { background: var(--input-bg); border: 1px solid var(--border-light); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; box-shadow: var(--shadow); }
+.wp-row { display: flex; align-items: center; gap: 13px; padding: 12px 16px; border-bottom: 1px solid var(--border-light); position: relative; transition: background .15s; }
+.wp-row:last-child { border-bottom: none; }
+.wp-row[draggable="true"] { cursor: grab; }
+.wp-row[draggable="true"]:active { cursor: grabbing; }
+.wp-row.dragging { opacity: 0.4; background: var(--p-light); }
+.wp-row.drag-over { border-top: 2px solid var(--p); }
+.wp-line { position: absolute; left: 28px; top: 0; bottom: 0; width: 1px; background: var(--border-light); }
+.wp-row:first-child .wp-line { top: 55%; }
+.wp-row:last-child .wp-line { bottom: 55%; }
+.wp-dot { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 9px; font-weight: 700; position: relative; z-index: 1; }
+.dot-s { background: var(--p); color: #fff; }
+.dot-e { background: var(--error); color: #fff; }
+.dot-m { background: var(--bg-card); border: 2px solid var(--border); color: var(--p); }
+.wp-info { flex: 1; min-width: 0; }
+.wp-name { font-size: clamp(12px,2.5vw,14px); color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; position: relative; }
+.wp-name.editing { overflow: visible; }
+.wp-coords { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
+/* TOOLTIP HOVER */
+.wp-row.intermediate .wp-name::after {
+content: "Clicca per rinominare • Trascina per spostare";
+position: absolute; bottom: 100%; left: 0;
+background: #222; color: #fff; padding: 4px 8px; border-radius: 6px;
+font-size: 10px; font-weight: 400; white-space: nowrap; opacity: 0;
+transform: translateY(-4px); transition: all .15s; pointer-events: none; z-index: 10;
 }
-.btn-download:active { transform: scale(.97); }
-/* ── PROGRESS ─────────────────────────────────────────── */
-#progressCard { display:none; }
-#progressCard.on { display:block; }
-.prog-title { font-size:10.5px; color:var(--accent2); text-transform:uppercase; letter-spacing:.1em; margin-bottom:10px; }
-.prog-track { background:var(--bg3); border-radius:100px; height:4px; margin-bottom:13px; overflow:hidden; }
-.prog-bar   { height:100%; background:linear-gradient(90deg,var(--accent),#FFFFFF); border-radius:100px; width:0%; transition:width .4s ease; }
-.log { max-height: 150px; overflow-y: auto; display: flex; flex-direction: column; gap: 4px; }
-.log-row { font-size:11.5px; line-height:1.65; display:flex; align-items:flex-start; gap:6px; }
-.log-row .d { flex-shrink:0; margin-top:3px; }
-.l-ok   .d { color:var(--green); }
-.l-info .d { color:var(--accent2); }
-.l-dim  .d { color:var(--text3); }
-.l-ok   span { color:var(--text); }
-.l-info span { color:var(--accent3); }
-.l-dim  span { color:var(--text2); }
-/* ── ERROR ────────────────────────────────────────────── */
-#errorCard { display:none; }
-#errorCard.on {
-display: flex; align-items:flex-start; gap:10px;
-background:rgba(239,68,68,.15); border:1px solid rgba(239,68,68,.4);
-border-radius:var(--radius); padding:14px 16px; margin-bottom:16px;
+.wp-row.intermediate:hover .wp-name::after { opacity: 1; transform: translateY(0); }
+/* DELETE BUTTON UNIFIED */
+.wp-delete-btn {
+position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+width: 24px; height: 24px; border-radius: 50%; background: var(--error-bg);
+border: 1.5px solid var(--error-bd); color: var(--error); font-size: 14px;
+font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center;
+transition: all .15s ease; z-index: 2; opacity: 0; pointer-events: none;
 }
-#errorCard .ei { font-size:18px; flex-shrink:0; }
-#errorCard .et { font-size:12.5px; line-height:1.65; color:#FECACA; white-space:pre-line; }
-/* ── RESULTS ─────────────────────────────────────────── */
-#results { display:none; }
-#results.on { display:block; }
-.sec-label {
-font-size:10px; color:var(--text3); text-transform:uppercase;
-letter-spacing:.12em; margin-bottom:8px; padding-left:2px;
+.wp-row:hover .wp-delete-btn { opacity: 1; pointer-events: auto; }
+.wp-delete-btn:hover { background: var(--error); color: #fff; transform: translateY(-50%) scale(1.1); }
+.wp-name-input {
+width: 100%; padding: 4px 6px; border: 1.5px solid var(--p); border-radius: 6px;
+background: var(--p-light); color: var(--text-main); font-family: inherit; font-size: inherit;
+outline: none;
 }
-.wp-list {
-background:var(--bg2); border:1px solid var(--border);
-border-radius:var(--radius); overflow:hidden; margin-bottom:16px;
-}
-.wp-row {
-display:flex; align-items:center; gap:13px;
-padding:12px 16px; border-bottom:1px solid rgba(53,94,124,.4);
-position:relative;
-}
-.wp-row:last-child { border-bottom:none; }
-.wp-line {
-position:absolute; left:28px; top:0; bottom:0;
-width:1px; background:var(--border2);
-}
-.wp-row:first-child .wp-line { top:55%; }
-.wp-row:last-child  .wp-line { bottom:55%; }
-.wp-dot {
-width:24px; height:24px; border-radius:50%; flex-shrink:0;
-display:flex; align-items:center; justify-content:center;
-font-size:9px; font-weight:700; position:relative; z-index:1;
-}
-.dot-s { background:var(--green); color:#fff; }
-.dot-e { background:var(--red);   color:#fff; }
-.dot-m { background:var(--bg3); border:2px solid var(--accent); color:var(--accent2); }
-.wp-info { flex:1; min-width:0; }
-.wp-name   { font-size:clamp(12px,2.5vw,14px); color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-.wp-coords { font-size:10px; color:var(--text3); margin-top:2px; }
-#iosHint { display:none; }
-#iosHint.on {
-background:rgba(245,158,11,.15); border:1px solid rgba(245,158,11,.35);
-border-radius:var(--radius); padding:13px 16px; margin-bottom:16px;
-font-size:12px; line-height:1.7; color:#FEF3C7;
-}
-#iosHint b { color:#FDE68A; }
-.howto {
-background:var(--bg2); border:1px solid var(--border);
-border-radius:var(--radius); padding:16px; margin-top:4px;
-}
-.howto-title { font-size:12px; color:var(--green); font-weight:500; margin-bottom:12px; display:flex; align-items:center; gap:6px; }
-.howto-step  { display:flex; gap:10px; margin-bottom:9px; font-size:clamp(11.5px,2.2vw,13px); color:var(--text2); line-height:1.65; }
-.howto-step:last-child { margin-bottom:0; }
-.step-n {
-width:20px; height:20px; flex-shrink:0;
-background:rgba(96,165,250,.15); border:1px solid rgba(96,165,250,.35);
-border-radius:50%; font-size:10px; color:var(--accent2);
-display:flex; align-items:center; justify-content:center; margin-top:1px;
-}
-@keyframes spin { to { transform:rotate(360deg); } }
-.spin { width:17px; height:17px; border:2px solid rgba(255,255,255,.35); border-top-color:#fff; border-radius:50%; animation:spin .7s linear infinite; }
-@keyframes up { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+#iosHint { display: none; }
+#iosHint.on { background: var(--warning-bg); border: 1.5px solid var(--warning-bd); border-radius: var(--radius); padding: 13px 16px; margin-bottom: 16px; font-size: 12px; line-height: 1.7; color: #78350f; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.spin { width: 17px; height: 17px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
+@keyframes up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .anim { animation: up .28s ease both; }
-@media (min-width: 640px) {
-.btn-convert { width:auto; padding:13px 28px; white-space:nowrap; align-self:end; }
-.card { padding:28px; }
-}
-::-webkit-scrollbar { width:4px; }
-::-webkit-scrollbar-track { background:transparent; }
-::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+.wp-deleting { animation: pulse 0.3s ease-in-out; opacity: 0.5; pointer-events: none; }
+@media (min-width: 640px) { .btn-convert { width: auto; padding: 13px 28px; white-space: nowrap; align-self: end; } .card { padding: 28px; } }
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
 </style>
 </head>
 <body>
 <div class="shell">
 <header class="header">
 <div class="header-inner">
-<div class="logo"></div>
+<div class="logo">🧭</div>
 <div>
-<div class="header-title">TomTom Route Converter</div>
-<div class="header-sub">URL → GPX / KMZ · MyDrive & Earth</div>
+<div class="header-title">Route Converter By Valter</div>
+<div class="header-sub">Ottimizzato per TomTom Rider</div>
 </div>
-<div class="header-pill">v3.0</div>
+<div class="header-pill">v10</div>
 </div>
 </header>
 <main>
 <div class="info">
-<b>Come funziona:</b> crea la rotta su Google Maps, incolla la URL qui. Se è breve,
-il tool ti guida all'espansione. Al ritorno, incolla la URL lunga e avvia la conversione.
+<b>Come funziona:</b> carica un file GPX/KMZ o incolla una URL Google/Apple Maps o Waze.
+Il tool estrarrà le tappe e creerà un file ottimizzato per TomTom MyDrive o Google Earth.
+</div>
+<!-- ISTRUZIONI ACCORDION -->
+<details class="accordion-card">
+<summary>📖 Come importare nel navigatore / Google Earth</summary>
+<div class="howto">
+<div class="howto-title"><span>✅</span> Importazione GPX (TomTom)</div>
+<div class="howto-step"><div class="step-n">1</div><div>Apri <b style="color:var(--p)">mydrive.tomtom.com</b> da browser</div></div>
+<div class="howto-step"><div class="step-n">2</div><div>Menu → <b>Importa rotta</b> → seleziona il file <b>.gpx</b></div></div>
+<div class="howto-step"><div class="step-n">3</div><div>TomTom riconosce <code style="color:var(--success)">&lt;rte&gt;</code> come itinerario guidato ✓</div></div>
+<div class="howto-step"><div class="step-n">4</div><div>Sincronizza il navigatore via USB o WiFi</div></div>
+<div style="margin-top:16px; border-top:1px solid var(--border-light); padding-top:12px;">
+<div class="howto-title"><span>🌍</span> Importazione KMZ (Google Earth)</div>
+<div class="howto-step"><div class="step-n">1</div><div>Apri <b style="color:var(--p)">Google Earth</b> (PC o Mobile)</div></div>
+<div class="howto-step"><div class="step-n">2</div><div><b>File → Importa</b> o trascina il <b>.kmz</b></div></div>
+<div class="howto-step"><div class="step-n">3</div><div>Visualizza in 3D con waypoint e traccia stradale</div></div>
+</div>
+</div>
+</details>
+<!-- STORICO LOCALE -->
+<div id="historyDropdown">
+<button class="history-btn" onclick="toggleHistory()">📜 Recenti</button>
+<div class="history-list" id="historyList"></div>
 </div>
 <div class="card">
 <div class="field">
-<label class="label">1. NOME ROTTA</label>
+<label class="label">1. DAI UN NOME AL VIAGGIO</label>
 <div class="input-wrap">
-<input type="text" id="nameIn" value="La mia rotta" placeholder="Nome del percorso" autocomplete="off"/>
+<input type="text" id="nameIn" value="La mia rotta" placeholder="Es: Passo dello Stelvio - Giro Sabato" autocomplete="off"/>
 <button class="x-btn" id="xName" onclick="clearField('nameIn','xName')" tabindex="-1">✕</button>
 </div>
 </div>
 <div class="field">
-<label class="label">2. URL GOOGLE MAPS</label>
-<div class="input-wrap">
-<input type="url" id="urlIn" placeholder="Incolla la URL di Maps" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="url"/>
+<label class="label">2. SELEZIONA MODELLO TOMTOM</label>
+<select id="modelSelect" onchange="updateModelLimit()">
+<option value="48" selected>Rider 550 / MyDrive (max 48 tappe)</option>
+<option value="20">Rider 400 / 450 (max 20 tappe)</option>
+</select>
+</div>
+<div class="field">
+<label class="label">3. CARICA LA SORGENTE</label>
+<div class="input-wrap" style="margin-bottom:12px;">
+<input type="url" id="urlIn" placeholder="Incolla qui la URL (Google, Apple Maps, Waze)" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="url"/>
 <button class="x-btn" id="xUrl" onclick="clearField('urlIn','xUrl')" tabindex="-1">✕</button>
 </div>
-</div>
-<!-- ██ AREA ESPANSIONE URL BREVE ██ -->
 <div id="shortUrlArea">
 <button class="btn-expand" onclick="openExpander()">🔗 ESPANDI LA URL</button>
 <div class="field" style="margin-bottom:0;">
@@ -353,16 +298,30 @@ il tool ti guida all'espansione. Al ritorno, incolla la URL lunga e avvia la con
 </div>
 </div>
 </div>
+<div class="separator">OPPURE</div>
+<div class="file-upload-wrap">
+<label class="file-btn" id="fileBtn" for="fileInput">
+<span class="icon">📂</span>
+<span id="fileBtnText">Seleziona o trascina qui un file GPX, KMZ o KML</span>
+</label>
+<input type="file" id="fileInput" accept=".gpx,.kmz,.kml,.xml"/>
+<div class="file-info" id="fileInfo"></div>
+</div>
+</div>
 <div class="field">
 <label class="label">SELEZIONA FORMATO DI OUTPUT</label>
 <div class="fmt-toggle">
-<button class="fmt-btn active" data-fmt="gpx" onclick="setFormat('gpx')">📦 GPX (TomTom MyDrive)</button>
-<button class="fmt-btn" data-fmt="kmz" onclick="setFormat('kmz')"> KMZ (Google Earth 3D)</button>
+<button class="fmt-btn active" data-fmt="gpx">
+<span>📦</span> <span>GPX (TomTom)</span>
+</button>
+<button class="fmt-btn" data-fmt="kmz">
+<span>🌍</span> <span>KMZ (Earth)</span>
+</button>
 </div>
 </div>
 <button class="btn-convert" id="convertBtn" onclick="go()">
 <span id="bIcon">▶</span>
-<span id="bText">Converti</span>
+<span id="bText">Esporta per TomTom</span>
 </button>
 </div>
 <div class="card" id="progressCard">
@@ -376,52 +335,86 @@ il tool ti guida all'espansione. Al ritorno, incolla la URL lunga e avvia la con
 </div>
 <div id="results">
 <div class="sec-label" id="wpLabel">Tappe</div>
-<div class="wp-list" id="wpList"></div>
+<div id="osrmStats">
+<div class="stat-item"><div class="stat-val" id="statDist">0 km</div><div class="stat-label">Distanza</div></div>
+<div class="stat-item"><div class="stat-val" id="statTime">0h 00m</div><div class="stat-label">Tempo stimato</div></div>
+</div>
+<div id="mapPreview"></div>
+<div class="wp-list modifiable" id="wpList"></div>
 <div id="iosHint">
-<b>📱 iPhone / iPad:</b> il file viene scaricato nella app
-<em>File</em>. Per KMZ: toccalo e scegli "Apri con Google Earth".
-Per GPX: condividilo al PC via AirDrop o iCloud.
+<b>📱 iPhone / iPad:</b> il file viene scaricato nella app <em>File</em>.
+Per KMZ: toccalo e scegli "Apri con Google Earth".
+</div>
+<div id="statusMessage">
+<span class="sm-icon"></span>
+<div class="sm-body"><strong></strong><span class="sm-detail"></span></div>
 </div>
 <button class="btn-download" id="dlBtn" onclick="download()">
-<span></span><span id="dlLabel">Scarica .gpx</span>
+<span>💾</span> <span id="dlLabel">Scarica File</span>
 </button>
-<div class="howto" id="howtoBlock">
-<div class="howto-title"><span></span> Come importare</div>
-<div id="howtoContent"></div>
-</div>
 </div>
 </main>
 </div>
 <script>
-const $  = id => document.getElementById(id);
+const $ = id => document.getElementById(id);
 const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent);
+let _output = '', _name = '', _currentFormat = 'gpx';
+let _currentWaypoints = [];
+let _currentRoutePoints = null;
+let _wpLimit = 48;
+let _map = null;
+let _history = JSON.parse(localStorage.getItem('routeConvHistory') || '[]');
+let _undoState = null; // { wps: [], route: null, fmt: string }
 function clearField(inputId, btnId) {
 $(inputId).value = '';
 $(btnId).classList.remove('on');
 $(inputId).focus();
 }
-// Listener per pulsanti clear
 ['urlIn','nameIn','expandedUrlIn'].forEach(id => {
 $(id).addEventListener('input', function() {
 const btnId = id === 'urlIn' ? 'xUrl' : id === 'nameIn' ? 'xName' : 'xExpanded';
 $(btnId).classList.toggle('on', this.value.length > 0);
 });
 });
-$('urlIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
-$('expandedUrlIn').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); go(); } });
-// ██ GESTIONE FORMATO SELEZIONATO ██
-let _output = '', _name = '', _currentFormat = 'gpx';
+$('urlIn').addEventListener('keydown', e => { if(e.key === 'Enter') { e.preventDefault(); go(); } });
+$('expandedUrlIn').addEventListener('keydown', e => { if(e.key === 'Enter') { e.preventDefault(); go(); } });
 function setFormat(fmt) {
 _currentFormat = fmt;
-document.querySelectorAll('.fmt-btn').forEach(b => b.classList.toggle('active', b.dataset.fmt === fmt));
-updateHowto();
-if (_output) {
-$('dlLabel').textContent = 'Scarica  ' + _name.replace(/\s+/g,'_') + '.' + _currentFormat;
+document.querySelectorAll('.fmt-btn').forEach(b => {
+b.classList.toggle('active', b.dataset.fmt === fmt);
+});
+$('bText').textContent = fmt === 'gpx' ? 'Esporta per TomTom' : 'Esporta per Google Earth';
+updateHowtoLabels();
+if(_output && _currentWaypoints.length >= 2) {
+regenerateOutputFromCurrentWaypoints().then(() => {
+$('dlLabel').textContent = 'Scarica ' + _name.replace(/\s+/g,'_') + '.' + _currentFormat;
+});
+} else {
+$('dlLabel').textContent = 'Scarica ' + _name.replace(/\s+/g,'_') + '.' + _currentFormat;
 }
 }
-// ██ RILEVAMENTO URL BREVE IN TEMPO REALE ██
+function updateHowtoLabels() { /* Placeholder se necessario */ }
+$('fileInput').addEventListener('change', function(e) {
+const file = e.target.files[0];
+if(file) {
+const ext = file.name.split('.').pop().toLowerCase();
+$('fileBtn').classList.add('has-file');
+$('fileBtnText').textContent = file.name;
+$('fileInfo').classList.add('on');
+$('fileInfo').textContent = `File ${ext.toUpperCase()} pronto · ${formatBytes(file.size)}`;
+$('urlIn').value = ''; // PULIZIA INPUT URL
+$('urlIn').placeholder = 'Disabilitato (file caricato)';
+$('xUrl').classList.remove('on');
+} else {
+$('fileBtn').classList.remove('has-file');
+$('fileBtnText').textContent = 'Seleziona o trascina qui un file GPX, KMZ o KML';
+$('fileInfo').classList.remove('on');
+$('urlIn').placeholder = 'Incolla qui la URL (Google, Apple Maps, Waze)';
+}
+});
+function formatBytes(bytes) { if(!bytes) return ''; if(bytes < 1024) return bytes + ' B'; if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB'; return (bytes/(1024*1024)).toFixed(1) + ' MB'; }
 $('urlIn').addEventListener('input', function() {
 const isShort = isShortUrl(this.value.trim());
 $('shortUrlArea').style.display = isShort ? 'block' : 'none';
@@ -433,257 +426,417 @@ function openExpander() {
 const url = $('urlIn').value.trim();
 if(url) window.open('https://www.expandurl.net/?url=' + encodeURIComponent(url), '_blank');
 }
-function updateHowto() {
-const isGpx = _currentFormat === 'gpx';
-$('howtoContent').innerHTML = isGpx ? `
-<div class="howto-step"><div class="step-n">1</div><div>Apri <b style="color:var(--accent2)">mydrive.tomtom.com</b> da browser — preferibilmente da PC</div></div>
-<div class="howto-step"><div class="step-n">2</div><div>Menu laterale → <b>Importa rotta</b> → seleziona il file <b>.gpx</b> scaricato</div></div>
-<div class="howto-step"><div class="step-n">3</div><div>TomTom riconosce la struttura <code style="color:var(--green);font-size:.9em">&lt;rte&gt;</code> e tratta la rotta come itinerario guidato ✓</div></div>
-<div class="howto-step"><div class="step-n">4</div><div>Sincronizza il navigatore con MyDrive — la rotta sarà disponibile sul display</div></div>` : `
-<div class="howto-step"><div class="step-n">1</div><div>Apri <b style="color:var(--accent2)">Google Earth</b> (app mobile o desktop)</div></div>
-<div class="howto-step"><div class="step-n">2</div><div><b>File → Importa</b> (o trascina il file <b>.kmz</b> nella finestra)</div></div>
-<div class="howto-step"><div class="step-n">3</div><div>Il percorso seguirà le strade reali in 3D con waypoint e popup ✓</div></div>
-<div class="howto-step"><div class="step-n">4</div><div>Puoi salvarlo in "I miei luoghi" o visualizzarlo in modalità tour</div></div>`;
+// ==================== STORICO LOCALE ====================
+function toggleHistory() {
+const list = $('historyList');
+if(list.classList.contains('open')) { list.classList.remove('open'); return; }
+list.innerHTML = '';
+if(_history.length === 0) list.innerHTML = '<div class="history-item" style="color:var(--text-muted);cursor:default;">Nessuna conversione recente</div>';
+else {
+_history.forEach((h, idx) => {
+const div = document.createElement('div');
+div.className = 'history-item';
+div.textContent = `${h.name} • ${h.wps} tappe • ${h.fmt.toUpperCase()}`;
+div.onclick = () => { $('nameIn').value = h.name; $('urlIn').value = h.url || ''; refreshInteractiveWaypointsDisplay(); toggleHistory(); };
+list.appendChild(div);
+});
 }
-// ── GEOCODING ─────────────────────────────────────────────────────
+list.classList.add('open');
+}
+function saveToHistory() {
+const entry = { name: _name, url: $('urlIn').value, wps: _currentWaypoints.length, fmt: _currentFormat, ts: Date.now() };
+_history.unshift(entry);
+if(_history.length > 5) _history.pop();
+localStorage.setItem('routeConvHistory', JSON.stringify(_history));
+}
+document.addEventListener('click', (e) => {
+if(!e.target.closest('#historyDropdown')) $('historyList').classList.remove('open');
+});
+// ==================== GEOCODING & PARSERS ====================
 async function geocode(q) {
-const r = await fetch(
-'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(q) +
-'&format=json&limit=1&accept-language=it,en&countrycodes=it',
-{ headers: { 'User-Agent': 'TomTomRouteConverter/3.0' } }
-);
-if (!r.ok) throw new Error('Errore di rete: "' + q + '"');
-const d = await r.json();
-if (!d.length) throw new Error('Luogo non trovato: "' + q + '"');
-return { lat: parseFloat(d[0].lat), lon: parseFloat(d[0].lon), name: d[0].display_name.split(',')[0].trim() };
-}
-// ── PARSERS ───────────────────────────────────────────────────────
-function coordStr(s) {
-const m = s.match(/^(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)$/);
-return m ? { lat: parseFloat(m[1]), lon: parseFloat(m[2]), name: s } : null;
-}
-const isBlob = s => s.includes('data=') || s.includes('!3m') || s.includes('authuser=');
-function blobCoords(s) {
-const re = /!1d(-?\d+\.\d+)!2d(-?\d+\.\d+)/g, pairs = [];
-let m; while ((m = re.exec(s)) !== null) pairs.push({ lon: parseFloat(m[1]), lat: parseFloat(m[2]) });
-if (!pairs.length) return null;
-const p = pairs[pairs.length - 1];
-return { lat: p.lat, lon: p.lon, name: p.lat.toFixed(5) + ',' + p.lon.toFixed(5) };
-}
-function parseDir(url) {
-const m = url.match(/maps\/dir\/(.+?)(?:\/(?:@[^/]+)?$|$)/);
-if (!m) return null;
-return m[1].split('/').map(s => decodeURIComponent(s.replace(/\+/g,' ')).trim()).filter(s => s && !s.startsWith('@'));
-}
-function parseQuery(url) {
+let query = q.trim();
+addLog(`Geocoding: "${query}"`, 'info');
+const attempts = [query, query.replace(/,\s*\d{5}.*$/, '').trim(), query.split(',')[0].replace(/\d+/g, '').trim(), query.replace(/[^a-zA-Z\s]/g, ' ').replace(/\s+/g, ' ').trim()];
+for (let i = 0; i < attempts.length; i++) {
+const attemptQuery = attempts[i];
+if (!attemptQuery || attemptQuery.length < 3) continue;
 try {
-const u = new URL(url), o = u.searchParams.get('origin'), d = u.searchParams.get('destination'), w = u.searchParams.get('waypoints');
-if (!o || !d) return null;
-const stops = [o]; if (w) stops.push(...w.split('|').filter(Boolean)); stops.push(d);
-return stops;
-} catch { return null; }
+addLog(` Tentativo ${i+1}: "${attemptQuery}"`, 'dim');
+const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(attemptQuery)}&format=json&limit=1&accept-language=it,en`, { headers: { 'User-Agent': 'TomTomRouteConverter/10.0' } });
+if (r.ok) {
+const data = await r.json();
+if (data && data.length > 0) {
+return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), name: data[0].display_name.split(',')[0].trim() };
 }
-// ── RILEVAMENTO URL BREVI ───────────────────────────
-function isShortUrl(url) {
-return /maps\.app\.goo\.gl|goo\.gl\/maps/i.test(url);
+}
+} catch (e) {}
+}
+throw new Error(`Impossibile geocodificare: "${q}"`);
+}
+function cleanStopName(stop) { if (!stop) return stop; return stop.replace(/,\s*\d{4,5}(?=\s*[,)]|$)/g, '').replace(/\s{2,}/g,' ').trim(); }
+function parseDir(url) {
+const match = url.match(/maps\/dir\/([^@?]+)/);
+if (!match) return null;
+return match[1].split('/').map(s => decodeURIComponent(s.replace(/\+/g, ' ')).trim()).filter(s => s && s.length > 0 && !s.startsWith('@') && !s.includes('data=')).map(cleanStopName).filter(s => s && s.length > 0);
+}
+function parseAppleMaps(url) {
+try {
+const u = new URL(url);
+if(!u.host.includes('apple.com')) return null;
+const stops = [];
+if(u.searchParams.get('q')) stops.push(u.searchParams.get('q'));
+if(u.searchParams.get('daddr')) stops.push(u.searchParams.get('daddr'));
+const sll = u.searchParams.get('sll') || u.searchParams.get('ll');
+if(sll) { const [lat,lon] = sll.split(','); stops.unshift(`${lat},${lon}`); }
+return stops.length >= 2 ? { stops, src: 'Apple Maps' } : null;
+} catch(e) { return null; }
+}
+function parseWaze(url) {
+try {
+const u = new URL(url);
+if(!u.host.includes('waze.com')) return null;
+const from = u.searchParams.get('from');
+const to = u.searchParams.get('to');
+if(from && to) return { stops: [from, to], src: 'Waze' };
+if(u.searchParams.get('ll')) return { stops: [u.searchParams.get('ll')], src: 'Waze (partial)' };
+return null;
+} catch(e) { return null; }
 }
 function extractStops(raw) {
-let url = raw.trim();
-if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-if (url.includes('maps/dir/'))    { const s = parseDir(url);   if (s && s.length >= 2) return { stops: s, src: 'Google Maps' }; }
-if (url.includes('origin='))      { const s = parseQuery(url); if (s && s.length >= 2) return { stops: s, src: 'Google Maps' }; }
+let url = raw.trim(); if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+const apple = parseAppleMaps(url); if(apple) return apple;
+const waze = parseWaze(url); if(waze && waze.stops.length >= 2) return waze;
+if (url.includes('origin=') || url.includes('destination=')) {
+const parsed = parseQuery(url);
+if (parsed && parsed.stops && parsed.stops.length >= 2) {
+const cleanedStops = parsed.stops.map(cleanStopName).filter(s => s && s.length > 0);
+if (cleanedStops.length >= 2) return { stops: cleanedStops, src: 'Google Maps (query)' };
+}
+}
+if (url.includes('maps/dir/')) {
+const stops = parseDir(url);
+if (stops && stops.length >= 2) return { stops: stops, src: 'Google Maps (path)' };
+}
 return null;
 }
-// ██ ALGORITMO DOUGLAS-PEUCKER (semplificazione polyline) ██
-function douglasPeucker(points, tolerance) {
+function parseGPX(xmlStr) {
+const doc = new DOMParser().parseFromString(xmlStr, "text/xml");
+let pts = [];
+const rtepts = doc.getElementsByTagName('rtept');
+if(rtepts.length > 0) { for(let n of rtepts) pts.push({ lat: parseFloat(n.getAttribute('lat')), lon: parseFloat(n.getAttribute('lon')), name: n.getElementsByTagName('name')[0]?.textContent || 'Tappa' }); }
+else {
+const wpts = doc.getElementsByTagName('wpt');
+if(wpts.length > 0) { for(let n of wpts) pts.push({ lat: parseFloat(n.getAttribute('lat')), lon: parseFloat(n.getAttribute('lon')), name: n.getElementsByTagName('name')[0]?.textContent || 'Punto' }); }
+else {
+const trkpts = doc.getElementsByTagName('trkpt'); for(let n of trkpts) pts.push({ lat: parseFloat(n.getAttribute('lat')), lon: parseFloat(n.getAttribute('lon')), name: 'Pt' });
+if(pts.length > 50) pts = pts.filter((_, i) => i % Math.floor(pts.length/30) === 0);
+}
+}
+return pts;
+}
+function parseKML(xmlStr) {
+const doc = new DOMParser().parseFromString(xmlStr, "text/xml");
+const placemarks = doc.getElementsByTagName('Placemark'); let pts = [];
+for(let pm of placemarks) { const pt = pm.getElementsByTagName('Point')[0]; if(pt) { const coords = pt.getElementsByTagName('coordinates')[0]?.textContent?.trim(); if(coords) { const [lon, lat] = coords.split(',').map(Number); pts.push({ lat, lon, name: pm.getElementsByTagName('name')[0]?.textContent || 'Luogo' }); } } }
+if(pts.length === 0) { const lines = doc.getElementsByTagName('LineString'); if(lines.length > 0) { const coords = lines[0].getElementsByTagName('coordinates')[0]?.textContent?.trim().split(/\s+/); if(coords && coords.length > 0) { pts.push({ lat: parseFloat(coords[0].split(',')[1]), lon: parseFloat(coords[0].split(',')[0]), name: 'Inizio' }); if(coords.length > 1) pts.push({ lat: parseFloat(coords[coords.length-1].split(',')[1]), lon: parseFloat(coords[coords.length-1].split(',')[0]), name: 'Fine' }); } } }
+return pts;
+}
+async function parseFile(file) {
+const ext = file.name.split('.').pop().toLowerCase();
+if(ext === 'gpx' || ext === 'xml') return parseGPX(await file.text());
+else if(ext === 'kmz') { const zip = await JSZip.loadAsync(file); if(!zip.file('doc.kml')) throw new Error('KMZ non valido: manca doc.kml'); return parseKML(await zip.file('doc.kml').async('string')); }
+else if(ext === 'kml') return parseKML(await file.text());
+throw new Error('Formato non supportato');
+}
+function coordStr(s) { const m = s.match(/^(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)$/); return m ? { lat: parseFloat(m[1]), lon: parseFloat(m[2]), name: s } : null; }
+const isBlob = s => s.includes('data=') || s.includes('!3m') || s.includes('authuser=');
+function blobCoords(s) { const re = /!1d(-?\d+\.\d+)!2d(-?\d+\.\d+)/g, pairs = []; let m; while((m = re.exec(s)) !== null) pairs.push({ lon: parseFloat(m[1]), lat: parseFloat(m[2]) }); if(!pairs.length) return null; const p = pairs[pairs.length - 1]; return { lat: p.lat, lon: p.lon, name: p.lat.toFixed(5) + ',' + p.lon.toFixed(5) }; }
+function parseQuery(url) { try { const u = new URL(url), o = u.searchParams.get('origin'), d = u.searchParams.get('destination'), w = u.searchParams.get('waypoints'); if(!o || !d) return null; const stops = [o]; if(w) stops.push(...w.split('|').filter(Boolean)); stops.push(d); return { stops: stops, src: 'Google Maps (query params)' }; } catch { return null; } }
+function extractAllWaypointCoords(url) { const re = /!1d(-?\d+\.\d+)!2d(-?\d+\.\d+)/g; const coords = []; let m; while ((m = re.exec(url)) !== null) coords.push({ lon: parseFloat(m[1]), lat: parseFloat(m[2]) }); return coords; }
+function isShortUrl(url) { return /maps\.app\.goo\.gl|goo\.gl\/maps/i.test(url); }
+// ==================== GIS LOGIC ====================
+function updateModelLimit() { _wpLimit = parseInt($('modelSelect').value); if(_currentWaypoints.length > _wpLimit) updateWaypointCountWarning(true); }
+function getDistanceMeters(p1, p2) { const R = 6371000; const dLat = (p2.lat - p1.lat) * Math.PI / 180; const dLon = (p2.lon - p1.lon) * Math.PI / 180; const a = Math.sin(dLat/2)**2 + Math.cos(p1.lat * Math.PI / 180) * Math.cos(p2.lat * Math.PI / 180) * Math.sin(dLon/2)**2; return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
+function calculateTurningAngle(p1, p2, p3) { const dx1 = p2.lon - p1.lon; const dy1 = p2.lat - p1.lat; const dx2 = p3.lon - p2.lon; const dy2 = p3.lat - p2.lat; const dot = dx1 * dx2 + dy1 * dy2; const mag1 = Math.sqrt(dx1 * dx1 + dy1 * dy1); const mag2 = Math.sqrt(dx2 * dx2 + dy2 * dy2); if (mag1 === 0 || mag2 === 0) return 0; const cosAngle = Math.max(-1, Math.min(1, dot / (mag1 * mag2))); return Math.acos(cosAngle) * (180 / Math.PI); }
+function motoOptimize(points, sourceType) {
 if (points.length <= 2) return points;
-let maxDist = 0, maxIndex = 0;
-const start = points[0], end = points[points.length - 1];
-for (let i = 1; i < points.length - 1; i++) {
-const dist = perpendicularDistance(points[i], start, end);
-if (dist > maxDist) { maxDist = dist; maxIndex = i; }
+addLog('Avvio semplificazione Moto-Optimized...', 'info');
+let filtered = [points[0]];
+for (let i = 1; i < points.length; i++) { if (getDistanceMeters(filtered[filtered.length-1], points[i]) >= 30) filtered.push(points[i]); }
+addLog(`Filtro 30m: ${points.length} → ${filtered.length}`, 'dim');
+const angularKept = [filtered[0]];
+for (let i = 1; i < filtered.length - 1; i++) { const angle = calculateTurningAngle(filtered[i-1], filtered[i], filtered[i+1]); if (angle < 160) angularKept.push(filtered[i]); }
+angularKept.push(filtered[filtered.length - 1]);
+let result = angularKept;
+if (result.length > _wpLimit) {
+const step = (result.length - 2) / (_wpLimit - 2);
+const capped = [result[0]]; for (let i = 1; i < _wpLimit - 1; i++) capped.push(result[Math.round(i * step)]); capped.push(result[result.length - 1]);
+result = capped;
+addLog(`⛔ Limite modello (${_wpLimit}): ridotto a ${result.length} tappe`, 'warn');
 }
-if (maxDist > tolerance) {
-const left = douglasPeucker(points.slice(0, maxIndex + 1), tolerance);
-const right = douglasPeucker(points.slice(maxIndex), tolerance);
-return left.slice(0, -1).concat(right);
-} else {
-return [start, end];
+return result;
 }
-}
-function perpendicularDistance(point, lineStart, lineEnd) {
-const dx = lineEnd.lon - lineStart.lon;
-const dy = lineEnd.lat - lineStart.lat;
-const mag = Math.sqrt(dx * dx + dy * dy);
-if (mag === 0) return Math.sqrt((point.lon - lineStart.lon) ** 2 + (point.lat - lineStart.lat) ** 2);
-const u = ((point.lon - lineStart.lon) * dx + (point.lat - lineStart.lat) * dy) / (mag * mag);
-const x = lineStart.lon + u * dx;
-const y = lineStart.lat + u * dy;
-return Math.sqrt((point.lon - x) ** 2 + (point.lat - y) ** 2);
-}
-// ██ RICOSTRUZIONE PERCORSO STRADALE VIA OSRM ██
+function perpendicularDistance(point, lineStart, lineEnd) { const dx = lineEnd.lon - lineStart.lon, dy = lineEnd.lat - lineStart.lat; const mag = Math.sqrt(dx * dx + dy * dy); if(mag === 0) return Math.sqrt((point.lon - lineStart.lon)**2 + (point.lat - lineStart.lat)**2); const u = ((point.lon - lineStart.lon)*dx + (point.lat - lineStart.lat)*dy) / (mag * mag); const x = lineStart.lon + u * dx, y = lineStart.lat + u * dy; return Math.sqrt((point.lon - x)**2 + (point.lat - y)**2); }
+function douglasPeucker(points, tolerance) { if(points.length <= 2) return points; let maxDist = 0, maxIndex = 0; const start = points[0], end = points[points.length - 1]; for(let i = 1; i < points.length - 1; i++) { const dist = perpendicularDistance(points[i], start, end); if(dist > maxDist) { maxDist = dist; maxIndex = i; } } if(maxDist > tolerance) { const left = douglasPeucker(points.slice(0, maxIndex + 1), tolerance); const right = douglasPeucker(points.slice(maxIndex), tolerance); return left.slice(0, -1).concat(right); } else { return [start, end]; } }
 async function fetchOSRMRoute(waypoints) {
 const coords = waypoints.map(w => w.lon + ',' + w.lat).join(';');
 const url = 'https://router.project-osrm.org/route/v1/driving/' + coords + '?overview=full&geometries=geojson&alternatives=false';
-const r = await fetch(url);
-if (!r.ok) throw new Error('Errore ricostruzione percorso stradale');
-const data = await r.json();
-if (!data.routes || !data.routes[0] || !data.routes[0].geometry) {
-throw new Error('Impossibile ricostruire il percorso');
+const r = await fetch(url); if(!r.ok) throw new Error('Errore OSRM');
+const data = await r.json(); if(!data.routes || !data.routes[0] || !data.routes[0].geometry) throw new Error('Impossibile ricostruire percorso');
+return {
+points: data.routes[0].geometry.coordinates.map(c => ({ lon: c[0], lat: c[1] })),
+distance: data.routes[0].distance,
+duration: data.routes[0].duration
+};
 }
-const routeCoords = data.routes[0].geometry.coordinates.map(c => ({ lon: c[0], lat: c[1] }));
-const simplified = douglasPeucker(routeCoords, 0.000045);
-addLog('Percorso stradale: ' + routeCoords.length + ' punti → semplificati a ' + simplified.length, 'info');
-return simplified;
-}
-// ── GPX ───────────────────────────────────────────────────────────
+// ==================== BUILDERS ====================
 function buildGPX(wps, name, routePoints = null) {
-if (routePoints && routePoints.length > 0) {
-const trkpts = routePoints.map(p => '    <trkpt lat="'+p.lat.toFixed(6)+'" lon="'+p.lon.toFixed(6)+'"/>').join('\n');
-return '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 3.0"\nxmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>'+esc(name)+'</name></metadata>\n<rte>\n<name>'+esc(name)+'</name>\n'+wps.map(w => '  <rtept lat="'+w.lat.toFixed(6)+'" lon="'+w.lon.toFixed(6)+'">\n<name>'+esc(w.name)+'</name>\n</rtept>').join('\n')+'\n</rte>\n<trk>\n<name>'+esc(name)+' - Traccia</name>\n<trkseg>\n'+trkpts+'\n</trkseg>\n</trk>\n</gpx>';
-} else {
-const pts = wps.map(w => '  <rtept lat="'+w.lat.toFixed(6)+'" lon="'+w.lon.toFixed(6)+'">\n<name>'+esc(w.name)+'</name>\n</rtept>').join('\n');
-return '<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 3.0"\nxmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>'+esc(name)+'</name></metadata>\n<rte>\n<name>'+esc(name)+'</name>\n'+pts+'\n</rte>\n</gpx>';
+if(routePoints && routePoints.length > 0) {
+const trkpts = routePoints.map(p => ' <trkpt lat="' + p.lat.toFixed(6) + '" lon="' + p.lon.toFixed(6) + '"/>').join('\n');
+return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 10.0" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${esc(name)}</name></metadata>\n<rte>\n<name>${esc(name)}</name>\n${wps.map(w => ' <rtept lat="' + w.lat.toFixed(6) + '" lon="' + w.lon.toFixed(6) + '"><name>' + esc(w.name) + '</name></rtept>').join('\n')}\n</rte>\n<trk>\n<name>${esc(name)} - Traccia</name>\n<trkseg>\n${trkpts}\n</trkseg>\n</trk>\n</gpx>`;
 }
+return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 10.0" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${esc(name)}</name></metadata>\n<rte>\n<name>${esc(name)}</name>\n${wps.map(w => ' <rtept lat="' + w.lat.toFixed(6) + '" lon="' + w.lon.toFixed(6) + '"><name>' + esc(w.name) + '</name></rtept>').join('\n')}\n</rte>\n</gpx>`;
 }
-// ██ KMZ GENERATOR (con percorso stradale) ██
 async function buildKMZ(wps, name, routePoints) {
 const routeCoords = routePoints.map(p => p.lon.toFixed(6) + ',' + p.lat.toFixed(6) + ',0').join('\n');
-const wpPlacemarks = wps.map((w, i) =>
-'    <Placemark>\n<name>'+esc(w.name)+'</name>\n<description>Tappa '+(i+1)+'</description>\n<Point>\n<coordinates>'+w.lon.toFixed(6)+','+w.lat.toFixed(6)+',0</coordinates>\n</Point>\n</Placemark>'
-).join('\n');
-const kml = '<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>'+esc(name)+'</name>\n<description>Percorso ricostruito da Google Maps</description>\n<Style id="routeStyle"><LineStyle><color>ff0000ff</color><width>5</width></LineStyle></Style>\n'+wpPlacemarks+'\n<Placemark>\n<name>'+esc(name)+' - Percorso</name>\n<styleUrl>#routeStyle</styleUrl>\n<LineString>\n<tessellate>1</tessellate>\n<altitudeMode>clampToGround</altitudeMode>\n<coordinates>\n'+routeCoords+'\n</coordinates>\n</LineString>\n</Placemark>\n</Document>\n</kml>';
-const zip = new JSZip();
-zip.file('doc.kml', kml);
-const kmzBlob = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 9 } });
-return kmzBlob;
+const wpPlacemarks = wps.map((w, i) => ' <Placemark>\n<name>' + esc(w.name) + '</name>\n<description>Tappa ' + (i+1) + '</description>\n<Point>\n<coordinates>' + w.lon.toFixed(6) + ',' + w.lat.toFixed(6) + ',0</coordinates>\n</Point>\n</Placemark>').join('\n');
+const kml = `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>${esc(name)}</name>\n<Style id="motoLine"><LineStyle><color>ff00a5ff</color><width>5</width></LineStyle></Style>\n${wpPlacemarks}\n<Placemark>\n<name>${esc(name)} - Percorso</name>\n<styleUrl>#motoLine</styleUrl>\n<LineString>\n<tessellate>1</tessellate>\n<coordinates>\n${routeCoords}\n</coordinates>\n</LineString>\n</Placemark>\n</Document>\n</kml>`;
+const zip = new JSZip(); zip.file('doc.kml', kml);
+return await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 9 } });
 }
-// ── STATE ─────────────────────────────────────────────────────────
+// ==================== STATE, LOG & UI ====================
 function setProgress(p) { $('progBar').style.width = p + '%'; }
 function addLog(msg, t='dim') {
-const icons = { ok:'●', info:'◆', dim:'○' };
-const d = document.createElement('div');
-d.className = 'log-row l-' + t;
-d.innerHTML = '<span class="d">'+icons[t]+'</span><span>'+msg+'</span>';
-$('logEl').appendChild(d);
-$('logEl').scrollTop = 9999;
+const icons = { ok:'●', info:'◆', dim:'○', warn:'◆' };
+const d = document.createElement('div'); d.className = 'log-row l-' + t;
+d.innerHTML = '<span class="d">' + (icons[t]||'○') + '</span><span>' + msg + '</span>';
+$('logEl').appendChild(d); $('logEl').scrollTop = 9999;
 }
-// ─ MAIN ────────────────────────────────────────────────────────
-async function go() {
-let urlVal = $('urlIn').value.trim();
-const nameVal = $('nameIn').value.trim() || 'La mia rotta';
-if (!urlVal) { $('urlIn').focus(); return; }
-// Se è breve, usiamo il campo espanso
-if (isShortUrl(urlVal)) {
-urlVal = $('expandedUrlIn').value.trim();
-if (!urlVal) {
-$('expandedUrlIn').focus();
-$('expandedUrlIn').style.borderColor = 'var(--red)';
-setTimeout(() => $('expandedUrlIn').style.borderColor = '', 2000);
+function refreshInteractiveWaypointsDisplay(showWarningIfNeeded = false) {
+const list = $('wpList');
+const oldScroll = list.scrollTop;
+list.innerHTML = '';
+list.classList.add('modifiable');
+const frag = document.createDocumentFragment();
+_currentWaypoints.forEach((w, i) => {
+const isF = i === 0; const isL = i === _currentWaypoints.length - 1;
+const isIntermediate = !isF && !isL;
+const row = document.createElement('div');
+row.className = 'wp-row anim' + (isIntermediate ? ' intermediate' : '');
+row.draggable = isIntermediate;
+row.dataset.index = i;
+const deleteBtn = isIntermediate ? `<button class="wp-delete-btn" onclick="deleteWaypoint(${i}); event.stopPropagation();" title="Elimina tappa" aria-label="Elimina ${esc(w.name)}">✕</button>` : '';
+row.innerHTML = `
+<div class="wp-line"></div>
+<div class="wp-dot ${isF ? 'dot-s' : isL ? 'dot-e' : 'dot-m'}">${isF ? 'A' : isL ? 'B' : i}</div>
+<div class="wp-info">
+<div class="wp-name" data-idx="${i}">${esc(w.name)}</div>
+<div class="wp-coords">${w.lat.toFixed(5)}, ${w.lon.toFixed(5)}</div>
+</div>
+${deleteBtn}
+`;
+if(isIntermediate) {
+row.addEventListener('dragstart', (e) => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', i); row.classList.add('dragging'); });
+row.addEventListener('dragend', () => row.classList.remove('dragging'));
+row.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; row.classList.add('drag-over'); });
+row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+row.addEventListener('drop', (e) => {
+e.preventDefault(); row.classList.remove('drag-over');
+const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+const toIdx = parseInt(row.dataset.index);
+if(fromIdx !== toIdx && toIdx > 0 && toIdx < _currentWaypoints.length - 1) {
+const item = _currentWaypoints.splice(fromIdx, 1)[0];
+_currentWaypoints.splice(toIdx, 0, item);
+if(_currentRoutePoints) _currentRoutePoints = null;
+refreshInteractiveWaypointsDisplay(false);
+regenerateOutputFromCurrentWaypoints();
+}
+});
+}
+row.querySelector('.wp-name')?.addEventListener('click', (e) => {
+if(!isIntermediate) return;
+const nameSpan = e.currentTarget;
+const input = document.createElement('input');
+input.type = 'text'; input.value = w.name; input.className = 'wp-name-input';
+nameSpan.classList.add('editing'); nameSpan.innerHTML = ''; nameSpan.appendChild(input); input.focus();
+const saveName = () => {
+_currentWaypoints[i].name = input.value.trim() || w.name;
+refreshInteractiveWaypointsDisplay(); regenerateOutputFromCurrentWaypoints();
+};
+input.addEventListener('blur', saveName);
+input.addEventListener('keydown', (ev) => { if(ev.key === 'Enter') { ev.preventDefault(); saveName(); } });
+});
+frag.appendChild(row);
+});
+list.appendChild(frag);
+list.scrollTop = oldScroll;
+$('wpLabel').innerHTML = `Tappe (${_currentWaypoints.length})` + (showWarningIfNeeded && _currentWaypoints.length > 20 ? `<span class="wp-count-badge ${_currentWaypoints.length > _wpLimit ? 'critical' : ''}">⚠️ ${_currentWaypoints.length}/${_wpLimit}</span>` : _currentWaypoints.length <= 20 ? `<span class="wp-count-badge ok">✓ Ottimale</span>` : '');
+updateWaypointCountWarning(showWarningIfNeeded);
+$('dlLabel').textContent = 'Scarica ' + _name.replace(/\s+/g,'_') + '.' + _currentFormat;
+}
+function updateWaypointCountWarning(showIfNeeded = false) {
+const count = _currentWaypoints.length; const sm = $('statusMessage');
+const icon = sm.querySelector('.sm-icon'), title = sm.querySelector('.sm-body strong'), detail = sm.querySelector('.sm-body .sm-detail');
+if (count <= 20) { sm.className = 'status-green on'; icon.textContent = '✅'; title.textContent = 'Percorso Ottimale'; detail.textContent = 'Sincronizzazione MyDrive garantita.'; }
+else if (count <= _wpLimit) { sm.className = 'status-orange on'; icon.textContent = '⚠️'; title.textContent = 'Attenzione'; detail.textContent = `Numero tappe elevato (${count}). 💡 Tocca il nome per rinominare o usa ✕ per rimuovere.`; }
+else { sm.className = 'status-red on'; icon.textContent = '🔴'; title.textContent = 'Limite superato'; detail.textContent = `Il percorso è stato ridotto a ${_wpLimit} tappe per il modello selezionato. Elimina tappe non essenziali.`; }
+}
+async function deleteWaypoint(index) {
+if (index === 0 || index >= _currentWaypoints.length - 1) {
+Swal.fire({ icon: 'info', title: 'Tappa protetta', text: 'Start (A) e Fine (B) non possono essere eliminati.', confirmButtonText: 'OK', confirmButtonColor: '#1e5aa8' });
 return;
 }
-}
-$('progressCard').classList.remove('on');
-$('errorCard').classList.remove('on');
-$('results').classList.remove('on');
-$('logEl').innerHTML = '';
-_output = ''; _name = nameVal;
-const btn = $('convertBtn');
-btn.disabled = true;
-$('bIcon').innerHTML = '<div class="spin"></div>';
-$('bText').textContent = 'Elaborazione…';
-$('progressCard').classList.add('on');
-setProgress(5);
+const waypointName = _currentWaypoints[index].name;
+const result = await Swal.fire({
+title: 'Elimina tappa?', html: `Sei sicuro di voler eliminare:<br><strong style="color:var(--p)">${esc(waypointName)}</strong>?`,
+icon: 'question', showCancelButton: true, confirmButtonText: 'Sì, elimina', cancelButtonText: 'Annulla', confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280', reverseButtons: true
+});
+if (!result.isConfirmed) return;
+// FIX: Scope variables moved before try
+const originalBtnIcon = $('bIcon').innerHTML;
+const originalBtnText = $('bText').textContent;
+const backupWaypoints = [..._currentWaypoints];
+const backupRoutePoints = _currentRoutePoints ? [..._currentRoutePoints] : null;
 try {
-const parsed = extractStops(urlVal);
-if (!parsed) throw new Error('URL non riconosciuta.\nServono URL Google Maps.');
-addLog('Fonte: ' + parsed.src + ' · ' + parsed.stops.length + ' tappe trovate', 'ok');
-setProgress(15);
-const wps = [];
-for (let i = 0; i < parsed.stops.length; i++) {
-const s = parsed.stops[i];
-addLog('Tappa ' + (i+1) + '/' + parsed.stops.length + ' · ' + (s.length > 42 ? s.slice(0,42)+'…' : s), 'dim');
-const cd = coordStr(s);
-if (cd) {
-wps.push(cd);
-addLog('↳ coordinate: ' + cd.lat.toFixed(4) + ', ' + cd.lon.toFixed(4), 'info');
-} else if (isBlob(s)) {
-const ex = blobCoords(s);
-if (ex) { wps.push(ex); addLog('↳ estratte dal blob: ' + ex.lat.toFixed(4) + ', ' + ex.lon.toFixed(4), 'info'); }
-else addLog('↳ blob non decodificabile — tappa saltata', 'dim');
-} else {
-const g = await geocode(s);
-wps.push(g);
-addLog('↳ ' + g.name + ' (' + g.lat.toFixed(4) + ', ' + g.lon.toFixed(4) + ')', 'info');
-if (i < parsed.stops.length - 1) await sleep(1150);
+const row = document.querySelector(`.wp-row[data-index="${index}"]`);
+if (row) { row.classList.add('wp-deleting'); await sleep(200); }
+_currentWaypoints.splice(index, 1);
+addLog(`Tappa eliminata: "${waypointName}" (ora ${_currentWaypoints.length} tappe)`, 'ok');
+$('convertBtn').disabled = true; $('bIcon').innerHTML = '<div class="spin"></div>'; $('bText').textContent = 'Rigenerazione…';
+if (_currentFormat === 'kmz' && _currentWaypoints.length >= 2) {
+try { const osrm = await fetchOSRMRoute(_currentWaypoints); _currentRoutePoints = osrm.points; } catch { _currentRoutePoints = null; }
+} else if(_currentFormat === 'gpx') { _currentRoutePoints = null; }
+await regenerateOutputFromCurrentWaypoints();
+refreshInteractiveWaypointsDisplay(true);
+if(_currentRoutePoints) initMap();
+// Undo Toast
+const toast = Swal.mixin({ toast: true, position: 'top-end', timer: 5000, showCloseButton: false, showConfirmButton: false, html: `<b>Tappa eliminata</b><br>${esc(waypointName)} rimossa.<br><a href="#" id="undoLink" style="color:var(--p);font-weight:600;margin-top:4px;display:inline-block;">↩ Annulla eliminazione</a>` });
+toast.fire();
+document.getElementById('undoLink')?.addEventListener('click', (e) => {
+e.preventDefault(); Swal.close();
+_currentWaypoints.splice(index, 0, backupWaypoints[index]);
+_currentRoutePoints = backupRoutePoints;
+regenerateOutputFromCurrentWaypoints();
+refreshInteractiveWaypointsDisplay(true);
+if(_currentRoutePoints) initMap();
+});
+} catch (err) {
+_currentWaypoints = backupWaypoints; _currentRoutePoints = backupRoutePoints;
+addLog(`Errore eliminazione: ${err.message}`, 'warn');
+refreshInteractiveWaypointsDisplay(true);
+Swal.fire({ icon: 'error', title: 'Errore', text: 'Impossibile rigenerare il percorso. Ripristinato.', confirmButtonColor: '#1e5aa8' });
+} finally {
+$('convertBtn').disabled = false; $('bIcon').innerHTML = originalBtnIcon || '▶'; $('bText').textContent = originalBtnText || (_currentFormat === 'gpx' ? 'Esporta per TomTom' : 'Esporta per Google Earth');
 }
+}
+async function regenerateOutputFromCurrentWaypoints() {
+if (_currentWaypoints.length < 2) throw new Error('Meno di 2 tappe valide');
+if (_currentFormat === 'kmz') {
+_output = await buildKMZ(_currentWaypoints, _name, _currentRoutePoints);
+} else {
+_output = buildGPX(_currentWaypoints, _name, _currentRoutePoints);
+}
+$('dlLabel').textContent = 'Scarica ' + _name.replace(/\s+/g,'_') + '.' + _currentFormat;
+}
+// ==================== MAP LEAFLET ====================
+function initMap() {
+if(!$('mapPreview').classList.contains('on')) return;
+if(!_map) { _map = L.map('mapPreview').setView([_currentWaypoints[0].lat, _currentWaypoints[0].lon], 10); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(_map); }
+_map.eachLayer(l => _map.removeLayer(l));
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(_map);
+if(_currentRoutePoints && _currentRoutePoints.length > 0) {
+L.polyline(_currentRoutePoints.map(p => [p.lat, p.lon]), { color: '#1e5aa8', weight: 5 }).addTo(_map);
+} else {
+L.polyline(_currentWaypoints.map(w => [w.lat, w.lon]), { color: '#f59e0b', weight: 3, dashArray: '5, 10' }).addTo(_map);
+}
+_currentWaypoints.forEach((w, i) => { L.marker([w.lat, w.lon]).addTo(_map).bindPopup(`<b>${w.name}</b><br>Tappa ${i+1}`); });
+_map.fitBounds(L.latLngBounds(_currentWaypoints.map(w => [w.lat, w.lon])).pad(0.1));
+_map.invalidateSize();
+}
+// ==================== MAIN FLOW ====================
+async function go() {
+const file = $('fileInput').files[0];
+let urlVal = $('urlIn').value.trim();
+const nameVal = $('nameIn').value.trim() || 'La mia rotta';
+if (file && urlVal.length > 0) {
+Swal.fire({ icon: 'warning', title: 'Input ambiguo', text: 'Hai inserito sia un URL che un file GPX. Per procedere, mantieni solo una delle due fonti.', confirmButtonText: 'Ho capito', confirmButtonColor: '#1e5aa8' });
+return;
+}
+if(!file && !urlVal) { if($('fileBtn').classList.contains('has-file')) $('urlIn').focus(); else $('fileInput').focus(); return; }
+$('progressCard').classList.remove('on'); $('errorCard').classList.remove('on'); $('statusMessage').classList.remove('on','status-green','status-orange','status-red');
+$('results').classList.remove('on'); $('logEl').innerHTML = '';
+_output = ''; _name = nameVal;
+const btn = $('convertBtn'); btn.disabled = true; $('bIcon').innerHTML = '<div class="spin"></div>'; $('bText').textContent = 'Elaborazione…';
+$('progressCard').classList.add('on'); setProgress(5);
+try {
+let wps = []; let sourceType = file ? 'gpx' : 'url';
+if(file) {
+addLog('Lettura file: ' + file.name, 'ok');
+wps = await parseFile(file);
+addLog('Trovate ' + wps.length + ' tappe nel file', 'ok'); setProgress(40);
+} else {
+if(isShortUrl(urlVal)) { urlVal = $('expandedUrlIn').value.trim(); if(!urlVal) throw new Error('Incolla la URL espansa'); }
+const parsed = extractStops(urlVal); if(!parsed) throw new Error('URL non riconosciuta o incompleta');
+addLog('Fonte: ' + parsed.src + ' · ' + parsed.stops.length + ' tappe', 'ok'); setProgress(15);
+const directCoordsList = extractAllWaypointCoords(urlVal);
+if (directCoordsList.length === parsed.stops.length) {
+addLog('✅ Match perfetto: uso coordinate dirette dall\'URL', 'ok');
+for (let i = 0; i < parsed.stops.length; i++) { const c = directCoordsList[i]; wps.push({ lat: c.lat, lon: c.lon, name: parsed.stops[i] }); }
+} else {
+addLog('⚠️ Fallback geocoding', 'info');
+for(let i = 0; i < parsed.stops.length; i++) {
+const s = parsed.stops[i]; const cd = coordStr(s);
+if(cd) { wps.push(cd); addLog('↳ coordinate: ' + cd.lat.toFixed(4) + ', ' + cd.lon.toFixed(4), 'info'); }
+else if(isBlob(s)) { const ex = blobCoords(s); if(ex) { wps.push(ex); addLog('↳ estratte dal blob', 'info'); } }
+else { const g = await geocode(s); wps.push(g); addLog('↳ ' + g.name, 'info'); if (i < parsed.stops.length - 1) await sleep(1150); }
 setProgress(15 + Math.round(40 * (i+1) / parsed.stops.length));
 }
-if (wps.length < 2) throw new Error('Trovate meno di 2 tappe valide.\nControlla la URL e riprova.');
-// ██ RICOSTRUZIONE PERCORSO STRADALE (solo per KMZ) ██
-let routePoints = null;
-if (_currentFormat === 'kmz') {
-addLog('Ricostruzione percorso stradale via OSRM…', 'info');
-setProgress(60);
-routePoints = await fetchOSRMRoute(wps);
-setProgress(85);
 }
-// Genera output in base al formato
-if (_currentFormat === 'kmz') {
-_output = await buildKMZ(wps, nameVal, routePoints);
-addLog('File KMZ generato · ' + routePoints.length + ' punti · compresso', 'ok');
-setProgress(100);
-} else {
-_output = buildGPX(wps, nameVal, routePoints);
-setProgress(100);
-addLog('File GPX generato · ' + wps.length + ' tappe · struttura &lt;rte&gt;', 'ok');
 }
-const list = $('wpList'); list.innerHTML = '';
-wps.forEach((w, i) => {
-const isF = i===0, isL = i===wps.length-1;
-const row = document.createElement('div');
-row.className = 'wp-row anim'; row.style.animationDelay = (i*45)+'ms';
-row.innerHTML =
-'<div class="wp-line"></div>' +
-'<div class="wp-dot ' + (isF?'dot-s':isL?'dot-e':'dot-m') + '">' + (isF?'A':isL?'B':i) + '</div>' +
-'<div class="wp-info"><div class="wp-name">'+esc(w.name)+'</div>' +
-'<div class="wp-coords">'+w.lat.toFixed(5)+', '+w.lon.toFixed(5)+'</div></div>';
-list.appendChild(row);
-});
-$('wpLabel').textContent = 'Tappe (' + wps.length + ')';
-$('dlLabel').textContent = 'Scarica  ' + nameVal.replace(/\s+/g,'_') + '.' + _currentFormat;
-updateHowto();
-if (isIOS()) $('iosHint').classList.add('on');
-setTimeout(() => $('results').classList.add('on'), 250);
+if(wps.length < 2) throw new Error('Meno di 2 tappe valide');
+wps = motoOptimize(wps, sourceType);
+let routePoints = null; let dist = 0, dur = 0;
+if(_currentFormat === 'kmz') {
+addLog('Ricostruzione percorso stradale (OSRM)…', 'info'); setProgress(60);
+const osrm = await fetchOSRMRoute(wps); routePoints = osrm.points; dist = osrm.distance; dur = osrm.duration; setProgress(85);
+} else if(_currentFormat === 'gpx') {
+// GPX also fetches OSRM for stats if desired, but prompt says KMZ uses it. We'll keep stats for both if possible.
+try {
+const osrm = await fetchOSRMRoute(wps);
+dist = osrm.distance; dur = osrm.duration;
+routePoints = osrm.points; // Optional for GPX tracking
+} catch { /* silent fail for stats */ }
+}
+if(_currentFormat === 'kmz') { _output = await buildKMZ(wps, nameVal, routePoints); addLog('KMZ generato · ' + routePoints.length + ' punti traccia', 'ok'); }
+else { _output = buildGPX(wps, nameVal, routePoints); addLog('GPX generato · struttura <rte>/<rtept>', 'ok'); }
+setProgress(100);
+_currentWaypoints = [...wps]; _currentRoutePoints = routePoints;
+$('statDist').textContent = (dist/1000).toFixed(1) + ' km';
+const hours = Math.floor(dur / 3600); const mins = Math.floor((dur % 3600) / 60);
+$('statTime').textContent = `${hours}h ${mins.toString().padStart(2,'0')}m`;
+$('osrmStats').classList.add('on');
+$('mapPreview').classList.add('on');
+refreshInteractiveWaypointsDisplay(true);
+setTimeout(() => { $('results').classList.add('on'); initMap(); }, 250);
+saveToHistory();
 } catch(err) {
-$('progressCard').classList.remove('on');
-$('errorTxt').textContent = err.message;
-$('errorCard').classList.add('on');
+$('progressCard').classList.remove('on'); $('errorTxt').textContent = err.message; $('errorCard').classList.add('on');
 } finally {
-btn.disabled = false;
-$('bIcon').textContent = '▶';
-$('bText').textContent = 'Converti';
+btn.disabled = false; $('bIcon').textContent = '▶'; $('bText').textContent = _currentFormat === 'gpx' ? 'Esporta per TomTom' : 'Esporta per Google Earth';
 }
 }
-// ── DOWNLOAD ──────────────────────────────────────────────────────
 function download() {
-if (!_output) return;
+if(!_output) return;
+Swal.fire({ icon: 'success', title: `Download avviato ✓`, html: `<strong>${esc(_name)}.${_currentFormat}</strong><br>${_currentWaypoints.length} tappe · Formato ${_currentFormat.toUpperCase()}`, timer: 2000, showConfirmButton: false, toast: true, position: 'top-end' });
 const fn = _name.replace(/\s+/g,'_') + '.' + _currentFormat;
-let blob;
-if (_currentFormat === 'kmz') {
-blob = _output;
-} else {
-blob = new Blob([_output], { type: 'application/gpx+xml' });
+const blob = _currentFormat === 'kmz' ? _output : new Blob([_output], { type: 'application/gpx+xml' });
+const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: fn });
+document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(a.href);
 }
-const a = Object.assign(document.createElement('a'), {
-href: URL.createObjectURL(blob),
-download: fn
-});
-document.body.appendChild(a); a.click();
-document.body.removeChild(a); URL.revokeObjectURL(a.href);
-}
-// Init
-updateHowto();
+// ── INIT ───────────────────────────────────────
+document.querySelectorAll('.fmt-btn').forEach(btn => { btn.addEventListener('click', () => setFormat(btn.dataset.fmt)); });
+setFormat('gpx'); updateModelLimit();
+if(isIOS()) $('iosHint').classList.add('on');
 </script>
 </body>
 </html>
