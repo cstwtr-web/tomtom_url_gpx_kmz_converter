@@ -8,8 +8,8 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
 <meta name="apple-mobile-web-app-title" content="Route Converter"/>
 <meta name="mobile-web-app-capable" content="yes"/>
-<meta name="description" content="Converti URL Google Maps, Apple Maps, Waze o file GPX/KMZ in rotte ottimizzate per TomTom MyDrive"/>
-<title>Route Converter By Valter - PWA v15</title>
+<meta name="description" content="Converti URL Google Maps, Apple Maps, Waze o file GPX/KMZ in rotte ottimizzate per TomTom MyDrive - Editor GIS Reattivo"/>
+<title>Route Converter By Valter - v15 (MyDrive 2026 Ready)</title>
 <!-- ██ CDN SWEETALERT2, JSZIP, LEAFLET ██ -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -35,7 +35,7 @@ document.head.appendChild(appleLink);
 const manifest = {
 name: "Route Converter By Valter",
 short_name: "TomTom GPX",
-description: "Converti URL o file in GPX/KMZ per TomTom",
+description: "Converti URL o file in GPX/KMZ per TomTom - Editor GIS",
 start_url: "./",
 display: "standalone",
 background_color: "#e0f0ff",
@@ -44,7 +44,6 @@ icons: [{ src: iconPng, sizes: "512x512", type: "image/png", purpose: "any maska
 };
 const manifestLink = document.createElement('link');
 manifestLink.rel = 'manifest';
-// FIX: Prefisso data: mancante
 manifestLink.href = 'data:application/manifest+json;charset=utf-8,' + encodeURIComponent(JSON.stringify(manifest));
 document.head.appendChild(manifestLink);
 })();
@@ -81,7 +80,6 @@ main { max-width: 720px; margin: 0 auto; width: 100%; padding: clamp(18px,4vw,36
 .info { background: #fff; border: 1px solid var(--border-light); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 16px; font-size: clamp(11.5px,2vw,13px); line-height: 1.75; color: var(--text-sec); box-shadow: var(--shadow); }
 .info b { color: var(--text-main); }
 .info code { color: var(--success); background: var(--success-bg); padding: 1px 5px; border-radius: 4px; font-size: .9em; }
-/* ACCORDION ISTRUZIONI */
 .accordion-card { background: #fff; border: 1px solid var(--border-light); border-radius: var(--radius); margin-bottom: 16px; box-shadow: var(--shadow); overflow: hidden; }
 .accordion-card summary { padding: 14px 18px; font-weight: 600; cursor: pointer; list-style: none; display: flex; align-items: center; gap: 8px; color: var(--p); user-select: none; }
 .accordion-card summary::-webkit-details-marker { display: none; }
@@ -92,7 +90,6 @@ main { max-width: 720px; margin: 0 auto; width: 100%; padding: clamp(18px,4vw,36
 .howto-step { display: flex; gap: 10px; margin-bottom: 9px; font-size: clamp(11.5px,2.2vw,13px); color: var(--text-sec); line-height: 1.65; }
 .howto-step:last-child { margin-bottom: 0; }
 .step-n { width: 20px; height: 20px; flex-shrink: 0; background: var(--p-light); border: 1px solid var(--border-light); border-radius: 50%; font-size: 10px; color: var(--p); display: flex; align-items: center; justify-content: center; margin-top: 1px; font-weight: 600; }
-/* STORICO */
 #historyDropdown { position: relative; display: inline-block; margin-bottom: 16px; }
 .history-btn { background: var(--p-light); color: var(--p); border: 1px solid var(--border); border-radius: 8px; padding: 8px 12px; cursor: pointer; font-size: 12px; display: flex; align-items: center; gap: 6px; }
 .history-list { position: absolute; top: 100%; left: 0; width: 100%; min-width: 200px; background: #fff; border: 1px solid var(--border-light); border-radius: 8px; box-shadow: var(--shadow); z-index: 40; display: none; flex-direction: column; }
@@ -136,7 +133,13 @@ input::placeholder { color: var(--text-muted); font-size: .85em; }
 .btn-convert:disabled { opacity: .45; cursor: not-allowed; transform: none; }
 .btn-download { width: 100%; background: var(--success); color: #fff; border: none; border-radius: 16px; padding: clamp(15px,3vw,18px); font-family: 'Syne', sans-serif; font-weight: 700; font-size: clamp(14px,3vw,16px); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 6px 20px rgba(16,185,129,.25); transition: transform .12s; margin-bottom: 12px; }
 .btn-download:active { transform: scale(.98); }
-
+.btn-add-waypoint { background: var(--p-light); color: var(--p); border: 1.5px dashed var(--border); border-radius: 12px; padding: 10px 14px; font-family: inherit; font-weight: 600; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; margin-top: 12px; transition: all .2s; width: 100%; }
+.btn-add-waypoint:hover { background: var(--p); color: #fff; border-style: solid; }
+.add-waypoint-panel { background: var(--input-bg); border-radius: 12px; padding: 12px; margin-top: 12px; border: 1px solid var(--border-light); display: none; }
+.add-waypoint-panel.open { display: block; }
+.add-waypoint-panel input { width: 100%; margin-bottom: 8px; padding: 10px 12px; border-radius: 8px; }
+.add-waypoint-buttons { display: flex; gap: 8px; }
+.add-waypoint-buttons button { flex: 1; padding: 8px; border-radius: 8px; cursor: pointer; font-weight: 600; }
 #progressCard { display: none; }
 #progressCard.on { display: block; }
 .prog-title { font-size: 10.5px; color: var(--p); text-transform: uppercase; letter-spacing: .1em; margin-bottom: 10px; font-weight: 600; }
@@ -172,7 +175,10 @@ input::placeholder { color: var(--text-muted); font-size: .85em; }
 #mapPreview.on { display: block; }
 #results { display: none; }
 #results.on { display: block; }
-.sec-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; padding-left: 2px; font-weight: 600; display: flex; align-items: center; }
+.sec-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; padding-left: 2px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
+.wp-count-badge { font-size: 10px; background: var(--p-light); padding: 2px 8px; border-radius: 20px; margin-left: 8px; }
+.wp-count-badge.critical { background: var(--error-bg); color: var(--error); }
+.wp-count-badge.ok { background: var(--success-bg); color: var(--success); }
 .wp-list { background: var(--input-bg); border: 1px solid var(--border-light); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; box-shadow: var(--shadow); max-height: 450px; overflow-y: auto; }
 .wp-list::-webkit-scrollbar { width: 5px; }
 .wp-list::-webkit-scrollbar-track { background: transparent; border-radius: 10px; }
@@ -192,10 +198,10 @@ input::placeholder { color: var(--text-muted); font-size: .85em; }
 .dot-e { background: var(--error); color: #fff; }
 .dot-m { background: var(--bg-card); border: 2px solid var(--border); color: var(--p); }
 .wp-info { flex: 1; min-width: 0; }
-.wp-name { font-size: clamp(12px,2.5vw,14px); color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; position: relative; }
+.wp-name { font-size: clamp(12px,2.5vw,14px); color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-weight: 500; cursor: pointer; }
+.wp-name:hover { color: var(--p); text-decoration: underline; }
 .wp-name.editing { overflow: visible; }
-.wp-coords { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
-/* TOOLTIP HOVER */
+/* TOOLTIP HOVER (Cloude) */
 .wp-row.intermediate .wp-name::after {
 content: "Clicca per rinominare • Trascina per spostare";
 position: absolute; bottom: 100%; left: 0;
@@ -204,7 +210,7 @@ font-size: 10px; font-weight: 400; white-space: nowrap; opacity: 0;
 transform: translateY(-4px); transition: all .15s; pointer-events: none; z-index: 10;
 }
 .wp-row.intermediate:hover .wp-name::after { opacity: 1; transform: translateY(0); }
-/* DELETE BUTTON UNIFIED */
+.wp-coords { font-size: 10px; color: var(--text-muted); margin-top: 2px; }
 .wp-delete-btn {
 position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
 width: 24px; height: 24px; border-radius: 50%; background: var(--error-bg);
@@ -219,18 +225,16 @@ width: 100%; padding: 4px 6px; border: 1.5px solid var(--p); border-radius: 6px;
 background: var(--p-light); color: var(--text-main); font-family: inherit; font-size: inherit;
 outline: none;
 }
+/* Animazione eliminazione Cloude */
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+.wp-deleting { animation: pulse 0.3s ease-in-out; opacity: 0.5; pointer-events: none; }
 #iosHint { display: none; }
 #iosHint.on { background: var(--warning-bg); border: 1.5px solid var(--warning-bd); border-radius: var(--radius); padding: 13px 16px; margin-bottom: 16px; font-size: 12px; line-height: 1.7; color: #78350f; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { width: 17px; height: 17px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .anim { animation: up .28s ease both; }
-@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
-.wp-deleting { animation: pulse 0.3s ease-in-out; opacity: 0.5; pointer-events: none; }
 @media (min-width: 640px) { .btn-convert { width: auto; padding: 13px 28px; white-space: nowrap; align-self: end; } .card { padding: 28px; } }
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: var(--border-light); border-radius: 3px; }
 </style>
 </head>
 <body>
@@ -240,17 +244,16 @@ outline: none;
 <div class="logo">🧭</div>
 <div>
 <div class="header-title">Route Converter By Valter</div>
-<div class="header-sub">Ottimizzato per TomTom Rider</div>
+<div class="header-sub">GIS Editor Reattivo · TomTom MyDrive (2026)</div>
 </div>
 <div class="header-pill">v15</div>
 </div>
 </header>
 <main>
 <div class="info">
-<b>Come funziona:</b> carica un file GPX/KMZ o incolla una URL Google/Apple Maps o Waze.
-Il tool estrarrà le tappe e creerà un file ottimizzato per TomTom MyDrive o Google Earth.
+⚠️ <b>IMPORTANTE:</b> TomTom MyDrive attuale accetta massimo <b>29 waypoint</b> (inclusi partenza e arrivo). Il tool rispetta questo limite.
+<br>📌 <b>Editor GIS Reattivo:</b> modifica tappe, trascina, rinomina, aggiungi punti: la mappa e il file si aggiornano in tempo reale.
 </div>
-<!-- ISTRUZIONI ACCORDION -->
 <details class="accordion-card">
 <summary>📖 Come importare nel navigatore / Google Earth</summary>
 <div class="howto">
@@ -258,16 +261,13 @@ Il tool estrarrà le tappe e creerà un file ottimizzato per TomTom MyDrive o Go
 <div class="howto-step"><div class="step-n">1</div><div>Apri <b style="color:var(--p)">mydrive.tomtom.com</b> da browser</div></div>
 <div class="howto-step"><div class="step-n">2</div><div>Menu → <b>Importa rotta</b> → seleziona il file <b>.gpx</b></div></div>
 <div class="howto-step"><div class="step-n">3</div><div>TomTom riconosce <code style="color:var(--success)">&lt;rte&gt;</code> come itinerario guidato ✓</div></div>
-<div class="howto-step"><div class="step-n">4</div><div>Sincronizza il navigatore via USB o WiFi</div></div>
 <div style="margin-top:16px; border-top:1px solid var(--border-light); padding-top:12px;">
 <div class="howto-title"><span>🌍</span> Importazione KMZ (Google Earth)</div>
 <div class="howto-step"><div class="step-n">1</div><div>Apri <b style="color:var(--p)">Google Earth</b> (PC o Mobile)</div></div>
 <div class="howto-step"><div class="step-n">2</div><div><b>File → Importa</b> o trascina il <b>.kmz</b></div></div>
-<div class="howto-step"><div class="step-n">3</div><div>Visualizza in 3D con waypoint e traccia stradale</div></div>
 </div>
 </div>
 </details>
-<!-- STORICO LOCALE -->
 <div id="historyDropdown">
 <button class="history-btn" onclick="toggleHistory()">📜 Recenti</button>
 <div class="history-list" id="historyList"></div>
@@ -276,21 +276,21 @@ Il tool estrarrà le tappe e creerà un file ottimizzato per TomTom MyDrive o Go
 <div class="field">
 <label class="label">1. DAI UN NOME AL VIAGGIO</label>
 <div class="input-wrap">
-<input type="text" id="nameIn" value="La mia rotta" placeholder="Es: Passo dello Stelvio - Giro Sabato" autocomplete="off"/>
+<input type="text" id="nameIn" value="La mia rotta" placeholder="Es: Passo dello Stelvio" autocomplete="off"/>
 <button class="x-btn" id="xName" onclick="clearField('nameIn','xName')" tabindex="-1">✕</button>
 </div>
 </div>
 <div class="field">
 <label class="label">2. SELEZIONA MODELLO TOMTOM</label>
 <select id="modelSelect" onchange="updateModelLimit()">
-<option value="48" selected>Rider 550 / MyDrive (max 48 tappe)</option>
-<option value="20">Rider 400 / 450 (max 20 tappe)</option>
+<option value="29" selected>MyDrive (2026) → max 29 tappe</option>
+<option value="20">Rider 400 / 450 (legacy) → max 20 tappe</option>
 </select>
 </div>
 <div class="field">
 <label class="label">3. CARICA LA SORGENTE</label>
 <div class="input-wrap" style="margin-bottom:12px;">
-<input type="url" id="urlIn" placeholder="Incolla qui la URL (Google, Apple Maps, Waze)" autocomplete="off" autocorrect="off" spellcheck="false" inputmode="url"/>
+<input type="url" id="urlIn" placeholder="Incolla URL (Google, Apple Maps, Waze)" autocomplete="off"/>
 <button class="x-btn" id="xUrl" onclick="clearField('urlIn','xUrl')" tabindex="-1">✕</button>
 </div>
 <div id="shortUrlArea">
@@ -298,7 +298,7 @@ Il tool estrarrà le tappe e creerà un file ottimizzato per TomTom MyDrive o Go
 <div class="field" style="margin-bottom:0;">
 <label class="label">INCOLLA LA URL ESPANSA</label>
 <div class="input-wrap">
-<input type="url" id="expandedUrlIn" placeholder="Incolla la URL Espansa" autocomplete="off" inputmode="url"/>
+<input type="url" id="expandedUrlIn" placeholder="Incolla la URL Espansa" autocomplete="off"/>
 <button class="x-btn" id="xExpanded" onclick="clearField('expandedUrlIn','xExpanded')" tabindex="-1">✕</button>
 </div>
 </div>
@@ -316,12 +316,8 @@ Il tool estrarrà le tappe e creerà un file ottimizzato per TomTom MyDrive o Go
 <div class="field">
 <label class="label">SELEZIONA FORMATO DI OUTPUT</label>
 <div class="fmt-toggle">
-<button class="fmt-btn active" data-fmt="gpx">
-<span>📦</span> <span>GPX (TomTom)</span>
-</button>
-<button class="fmt-btn" data-fmt="kmz">
-<span>🌍</span> <span>KMZ (Earth)</span>
-</button>
+<button class="fmt-btn active" data-fmt="gpx"><span>📦</span> GPX (TomTom)</button>
+<button class="fmt-btn" data-fmt="kmz"><span>🌍</span> KMZ (Earth)</button>
 </div>
 </div>
 <button class="btn-convert" id="convertBtn" onclick="go()">
@@ -346,674 +342,381 @@ Il tool estrarrà le tappe e creerà un file ottimizzato per TomTom MyDrive o Go
 </div>
 <div id="mapPreview"></div>
 <div class="wp-list modifiable" id="wpList"></div>
-<div id="iosHint">
-<b>📱 iPhone / iPad:</b> il file viene scaricato nella app <em>File</em>.
-Per KMZ: toccalo e scegli "Apri con Google Earth".
+<button class="btn-add-waypoint" onclick="toggleAddWaypointPanel()">➕ Aggiungi tappa intermedia</button>
+<div id="addWaypointPanel" class="add-waypoint-panel">
+<input type="text" id="newWpAddress" placeholder="Indirizzo o coordinate (es: 45.464,9.190)" autocomplete="off"/>
+<div class="add-waypoint-buttons">
+<button onclick="addWaypointByAddress()" style="background:var(--p);color:#fff;border:none;">📍 Geocodifica</button>
+<button onclick="addWaypointByCoords()" style="background:var(--success);color:#fff;border:none;">📌 Coordinate</button>
+<button onclick="toggleAddWaypointPanel()" style="background:var(--border-light);color:var(--text-main);border:none;">Annulla</button>
 </div>
-<div id="statusMessage">
-<span class="sm-icon"></span>
-<div class="sm-body"><strong></strong><span class="sm-detail"></span></div>
 </div>
-
-<!-- ── DOWNLOAD STANDARD ── -->
-<button class="btn-download" id="dlBtn" onclick="download()">
-<span>💾</span> <span id="dlLabel">Scarica File</span>
-</button>
-
+<div id="iosHint"><b>📱 iPhone / iPad:</b> il file viene scaricato nella app <em>File</em>.</div>
+<div id="statusMessage"><span class="sm-icon"></span><div class="sm-body"><strong></strong><span class="sm-detail"></span></div></div>
+<button class="btn-download" id="dlBtn" onclick="download()"><span>💾</span> <span id="dlLabel">Scarica File</span></button>
 </div>
 </main>
 </div>
 <script>
+// ███████████████████████████████████████████████████████████████████████████
+// Route Converter By Valter v15 - MyDrive 2026 Edition (Merge Deepseek + Cloude)
+// GIS Reattivo con State-Driven Architecture - Limite aggiornato a 29 waypoint
+// ███████████████████████████████████████████████████████████████████████████
+
 const $ = id => document.getElementById(id);
-const esc = s => String(s)
-  .replace(/&/g,'&amp;')
-  .replace(/</g,'&lt;')
-  .replace(/>/g,'&gt;')
-  .replace(/"/g,'&quot;')
-  .replace(/'/g,'&apos;');
+const esc = s => String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
 const sleep = ms => new Promise(r => setTimeout(r, ms));
 const isIOS = () => /iPhone|iPad|iPod/.test(navigator.userAgent);
-// ── DRAG GUARD: impedisce al browser di aprire i file trascinati fuori dalla drop-zone
-document.addEventListener('dragover', (e) => e.preventDefault());
-document.addEventListener('drop',     (e) => e.preventDefault());
 
-let _output = '', _name = '', _currentFormat = 'gpx';
+// ██ STATE MANAGEMENT ██
 let _currentWaypoints = [];
 let _currentRoutePoints = null;
-let _wpLimit = 48;
+let _currentRouteDistance = 0;
+let _currentRouteDuration = 0;
+let _output = '';
+let _name = 'La mia rotta';
+let _currentFormat = 'gpx';
+let _wpLimit = 29;
 let _map = null;
+let _pendingRouting = null;
 let _history = [];
+
 try { _history = JSON.parse(localStorage.getItem('routeConvHistory') || '[]'); } catch(e) { _history = []; }
-function clearField(inputId, btnId) {
-$(inputId).value = '';
-$(btnId).classList.remove('on');
-$(inputId).focus();
-}
+
+// ██ UTILS ██
+function clearField(inputId, btnId) { $(inputId).value = ''; $(btnId).classList.remove('on'); $(inputId).focus(); }
 ['urlIn','nameIn','expandedUrlIn'].forEach(id => {
-$(id).addEventListener('input', function() {
-const btnId = id === 'urlIn' ? 'xUrl' : id === 'nameIn' ? 'xName' : 'xExpanded';
-$(btnId).classList.toggle('on', this.value.length > 0);
-});
-});
-$('urlIn').addEventListener('keydown', e => { if(e.key === 'Enter') { e.preventDefault(); go(); } });
-$('expandedUrlIn').addEventListener('keydown', e => { if(e.key === 'Enter') { e.preventDefault(); go(); } });
-function setFormat(fmt) {
-_currentFormat = fmt;
-document.querySelectorAll('.fmt-btn').forEach(b => {
-b.classList.toggle('active', b.dataset.fmt === fmt);
-});
-$('bText').textContent = fmt === 'gpx' ? 'Esporta per TomTom' : 'Esporta per Google Earth';
-updateHowtoLabels();
-if(_output && _currentWaypoints.length >= 2) {
-regenerateOutputFromCurrentWaypoints().then(() => {
-$('dlLabel').textContent = 'Scarica ' + _name.replace(/\s+/g,'_') + '.' + _currentFormat;
-});
-} else {
-$('dlLabel').textContent = 'Scarica ' + _name.replace(/\s+/g,'_') + '.' + _currentFormat;
-}
-}
-function updateHowtoLabels() {
-  const isGpx = _currentFormat === 'gpx';
-  const title = document.querySelector('.howto-title');
-  if (title) title.textContent = isGpx ? '✅ Importazione GPX (TomTom)' : '🌍 Importazione KMZ (Google Earth)';
-}
-
-// ── FILE DROP-ZONE: gestione drag & drop sul riquadro ──
-(function() {
-  const zone = $('fileBtn');
-  zone.addEventListener('dragover',  (e) => { e.preventDefault(); e.stopPropagation(); zone.classList.add('has-file'); e.dataTransfer.dropEffect = 'copy'; });
-  zone.addEventListener('dragenter', (e) => { e.preventDefault(); e.stopPropagation(); zone.classList.add('has-file'); });
-  zone.addEventListener('dragleave', (e) => {
-    // evita flickering quando si passa su un figlio
-    if (!zone.contains(e.relatedTarget)) zone.classList.remove('has-file');
+  $(id).addEventListener('input', function() {
+    const btnId = id === 'urlIn' ? 'xUrl' : id === 'nameIn' ? 'xName' : 'xExpanded';
+    $(btnId).classList.toggle('on', this.value.length > 0);
   });
-  zone.addEventListener('drop', (e) => {
-    e.preventDefault(); e.stopPropagation();
-    zone.classList.remove('has-file');
-    const file = e.dataTransfer.files[0];
-    if (!file) return;
-    const ext = file.name.split('.').pop().toLowerCase();
-    if (!['gpx','kmz','kml','xml'].includes(ext)) {
-      Swal.fire({ icon:'warning', title:'Formato non supportato', text:'Trascina un file .gpx, .kmz o .kml', confirmButtonColor:'#1e5aa8' });
-      return;
-    }
-    // Inietta il file nell'input nativo così il listener 'change' già esistente lo gestisce
-    const dt = new DataTransfer();
-    dt.items.add(file);
-    $('fileInput').files = dt.files;
-    $('fileInput').dispatchEvent(new Event('change'));
-  });
-})();
-
-$('fileInput').addEventListener('change', function(e) {
-const file = e.target.files[0];
-if(file) {
-const ext = file.name.split('.').pop().toLowerCase();
-$('fileBtn').classList.add('has-file');
-$('fileBtnText').textContent = file.name;
-$('fileInfo').classList.add('on');
-$('fileInfo').textContent = `File ${ext.toUpperCase()} pronto · ${formatBytes(file.size)}`;
-$('urlIn').value = ''; // PULIZIA INPUT URL
-$('urlIn').placeholder = 'Disabilitato (file caricato)';
-$('xUrl').classList.remove('on');
-} else {
-$('fileBtn').classList.remove('has-file');
-$('fileBtnText').textContent = 'Seleziona o trascina qui un file GPX, KMZ o KML';
-$('fileInfo').classList.remove('on');
-$('urlIn').placeholder = 'Incolla qui la URL (Google, Apple Maps, Waze)';
-}
 });
+$('urlIn').addEventListener('keydown', e => { if(e.key === 'Enter') go(); });
+$('expandedUrlIn').addEventListener('keydown', e => { if(e.key === 'Enter') go(); });
+
 function formatBytes(bytes) { if(!bytes) return ''; if(bytes < 1024) return bytes + ' B'; if(bytes < 1024*1024) return (bytes/1024).toFixed(1) + ' KB'; return (bytes/(1024*1024)).toFixed(1) + ' MB'; }
-$('urlIn').addEventListener('input', function() {
-const isShort = isShortUrl(this.value.trim());
-$('shortUrlArea').style.display = isShort ? 'block' : 'none';
-if(isShort && !this.value.trim().endsWith('/')) {
-$('expandedUrlIn').focus();
+function setProgress(p) { $('progBar').style.width = p + '%'; }
+function addLog(msg, t='dim') { const icons = { ok:'●', info:'◆', dim:'○', warn:'◆' }; const d = document.createElement('div'); d.className = 'log-row l-' + t; d.innerHTML = '<span class="d">' + (icons[t]||'○') + '</span><span>' + msg + '</span>'; $('logEl').appendChild(d); $('logEl').scrollTop = 9999; }
+function updateModelLimit() { _wpLimit = parseInt($('modelSelect').value); updateWaypointCountWarning(); }
+
+function setFormat(fmt) {
+  _currentFormat = fmt;
+  document.querySelectorAll('.fmt-btn').forEach(b => b.classList.toggle('active', b.dataset.fmt === fmt));
+  $('bText').textContent = fmt === 'gpx' ? 'Esporta per TomTom' : 'Esporta per Google Earth';
+  if(_currentWaypoints.length >= 2) regenerateOutput();
+  else $('dlLabel').textContent = 'Scarica ' + _name.replace(/\s+/g,'_') + '.' + _currentFormat;
 }
-});
-function openExpander() {
-const url = $('urlIn').value.trim();
-if(url) window.open('https://www.expandurl.net/?url=' + encodeURIComponent(url), '_blank');
-}
-// ==================== STORICO LOCALE ====================
-function toggleHistory() {
-const list = $('historyList');
-if(list.classList.contains('open')) { list.classList.remove('open'); return; }
-list.innerHTML = '';
-if(_history.length === 0) list.innerHTML = '<div class="history-item" style="color:var(--text-muted);cursor:default;">Nessuna conversione recente</div>';
-else {
-_history.forEach((h, idx) => {
-const div = document.createElement('div');
-div.className = 'history-item';
-div.textContent = `${h.name} • ${h.wps} tappe • ${h.fmt.toUpperCase()}`;
-div.onclick = () => { $('nameIn').value = h.name; $('urlIn').value = h.url || ''; refreshInteractiveWaypointsDisplay(); toggleHistory(); };
-list.appendChild(div);
-});
-}
-list.classList.add('open');
-}
-function saveToHistory() {
-const entry = { name: _name, url: $('urlIn').value, wps: _currentWaypoints.length, fmt: _currentFormat, ts: Date.now() };
-_history.unshift(entry);
-if(_history.length > 5) _history.pop();
-try { localStorage.setItem('routeConvHistory', JSON.stringify(_history)); } catch(e) {}
-}
-document.addEventListener('click', (e) => {
-if(!e.target.closest('#historyDropdown')) $('historyList').classList.remove('open');
-});
-// ==================== GEOCODING & PARSERS ====================
-async function geocode(q) {
-let query = q.trim();
-addLog(`Geocoding: "${query}"`, 'info');
-const attempts = [query, query.replace(/,\s*\d{5}.*$/, '').trim(), query.split(',')[0].replace(/\d+/g, '').trim(), query.replace(/[^a-zA-Z\s]/g, ' ').replace(/\s+/g, ' ').trim()];
-for (let i = 0; i < attempts.length; i++) {
-const attemptQuery = attempts[i];
-if (!attemptQuery || attemptQuery.length < 3) continue;
-try {
-addLog(` Tentativo ${i+1}: "${attemptQuery}"`, 'dim');
-const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(attemptQuery)}&format=json&limit=1&accept-language=it,en`, { headers: { 'User-Agent': 'TomTomRouteConverter/10.0' } });
-if (r.ok) {
-const data = await r.json();
-if (data && data.length > 0) {
-return { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), name: data[0].display_name.split(',')[0].trim() };
-}
-}
-} catch (e) {}
-}
-throw new Error(`Impossibile geocodificare: "${q}"`);
-}
-function cleanStopName(stop) { if (!stop) return stop; return stop.replace(/,\s*\d{4,5}(?=\s*[,)]|$)/g, '').replace(/\s{2,}/g,' ').trim(); }
-function parseDir(url) {
-const match = url.match(/maps\/dir\/([^@?]+)/);
-if (!match) return null;
-return match[1].split('/').map(s => decodeURIComponent(s.replace(/\+/g, ' ')).trim()).filter(s => s && s.length > 0 && !s.startsWith('@') && !s.includes('data=')).map(cleanStopName).filter(s => s && s.length > 0);
-}
-function parseAppleMaps(url) {
-try {
-const u = new URL(url);
-if(!u.host.includes('apple.com')) return null;
-const stops = [];
-if(u.searchParams.get('q')) stops.push(u.searchParams.get('q'));
-if(u.searchParams.get('daddr')) stops.push(u.searchParams.get('daddr'));
-const sll = u.searchParams.get('sll') || u.searchParams.get('ll');
-if(sll) { const [lat,lon] = sll.split(','); stops.unshift(`${lat},${lon}`); }
-return stops.length >= 2 ? { stops, src: 'Apple Maps' } : null;
-} catch(e) { return null; }
-}
-function parseWaze(url) {
-try {
-const u = new URL(url);
-if(!u.host.includes('waze.com')) return null;
-const from = u.searchParams.get('from');
-const to = u.searchParams.get('to');
-if(from && to) return { stops: [from, to], src: 'Waze' };
-if(u.searchParams.get('ll')) return { stops: [u.searchParams.get('ll')], src: 'Waze (partial)' };
-return null;
-} catch(e) { return null; }
-}
-function extractStops(raw) {
-let url = raw.trim(); if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
-const apple = parseAppleMaps(url); if(apple) return apple;
-const waze = parseWaze(url); if(waze && waze.stops.length >= 2) return waze;
-if (url.includes('origin=') || url.includes('destination=')) {
-const parsed = parseQuery(url);
-if (parsed && parsed.stops && parsed.stops.length >= 2) {
-const cleanedStops = parsed.stops.map(cleanStopName).filter(s => s && s.length > 0);
-if (cleanedStops.length >= 2) return { stops: cleanedStops, src: 'Google Maps (query)' };
-}
-}
-if (url.includes('maps/dir/')) {
-const stops = parseDir(url);
-if (stops && stops.length >= 2) return { stops: stops, src: 'Google Maps (path)' };
-}
-return null;
-}
-function parseGPX(xmlStr) {
-const doc = new DOMParser().parseFromString(xmlStr, "text/xml");
-let pts = [];
-const rtepts = doc.getElementsByTagName('rtept');
-if(rtepts.length > 0) { for(let n of rtepts) pts.push({ lat: parseFloat(n.getAttribute('lat')), lon: parseFloat(n.getAttribute('lon')), name: n.getElementsByTagName('name')[0]?.textContent || 'Tappa' }); }
-else {
-const wpts = doc.getElementsByTagName('wpt');
-if(wpts.length > 0) { for(let n of wpts) pts.push({ lat: parseFloat(n.getAttribute('lat')), lon: parseFloat(n.getAttribute('lon')), name: n.getElementsByTagName('name')[0]?.textContent || 'Punto' }); }
-else {
-const trkpts = doc.getElementsByTagName('trkpt'); for(let n of trkpts) pts.push({ lat: parseFloat(n.getAttribute('lat')), lon: parseFloat(n.getAttribute('lon')), name: 'Pt' });
-if(pts.length > 50) pts = pts.filter((_, i) => i % Math.floor(pts.length/30) === 0);
-}
-}
-return pts;
-}
-function parseKML(xmlStr) {
-const doc = new DOMParser().parseFromString(xmlStr, "text/xml");
-const placemarks = doc.getElementsByTagName('Placemark'); let pts = [];
-for(let pm of placemarks) { const pt = pm.getElementsByTagName('Point')[0]; if(pt) { const coords = pt.getElementsByTagName('coordinates')[0]?.textContent?.trim(); if(coords) { const [lon, lat] = coords.split(',').map(Number); pts.push({ lat, lon, name: pm.getElementsByTagName('name')[0]?.textContent || 'Luogo' }); } } }
-if(pts.length === 0) { const lines = doc.getElementsByTagName('LineString'); if(lines.length > 0) { const coords = lines[0].getElementsByTagName('coordinates')[0]?.textContent?.trim().split(/\s+/); if(coords && coords.length > 0) { pts.push({ lat: parseFloat(coords[0].split(',')[1]), lon: parseFloat(coords[0].split(',')[0]), name: 'Inizio' }); if(coords.length > 1) pts.push({ lat: parseFloat(coords[coords.length-1].split(',')[1]), lon: parseFloat(coords[coords.length-1].split(',')[0]), name: 'Fine' }); } } }
-return pts;
-}
-async function parseFile(file) {
-const ext = file.name.split('.').pop().toLowerCase();
-if(ext === 'gpx' || ext === 'xml') return parseGPX(await file.text());
-else if(ext === 'kmz') { const zip = await JSZip.loadAsync(file); if(!zip.file('doc.kml')) throw new Error('KMZ non valido: manca doc.kml'); return parseKML(await zip.file('doc.kml').async('string')); }
-else if(ext === 'kml') return parseKML(await file.text());
-throw new Error('Formato non supportato');
-}
-function coordStr(s) { const m = s.match(/^(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)$/); return m ? { lat: parseFloat(m[1]), lon: parseFloat(m[2]), name: s } : null; }
-const isBlob = s => s.includes('data=') || s.includes('!3m') || s.includes('authuser=');
-function blobCoords(s) { const re = /!1d(-?\d+\.\d+)!2d(-?\d+\.\d+)/g, pairs = []; let m; while((m = re.exec(s)) !== null) pairs.push({ lon: parseFloat(m[1]), lat: parseFloat(m[2]) }); if(!pairs.length) return null; const p = pairs[pairs.length - 1]; return { lat: p.lat, lon: p.lon, name: p.lat.toFixed(5) + ',' + p.lon.toFixed(5) }; }
-function parseQuery(url) { try { const u = new URL(url), o = u.searchParams.get('origin'), d = u.searchParams.get('destination'), w = u.searchParams.get('waypoints'); if(!o || !d) return null; const stops = [o]; if(w) stops.push(...w.split('|').filter(Boolean)); stops.push(d); return { stops: stops, src: 'Google Maps (query params)' }; } catch { return null; } }
-function extractAllWaypointCoords(url) { const re = /!1d(-?\d+\.\d+)!2d(-?\d+\.\d+)/g; const coords = []; let m; while ((m = re.exec(url)) !== null) coords.push({ lon: parseFloat(m[1]), lat: parseFloat(m[2]) }); return coords; }
-function isShortUrl(url) { return /maps\.app\.goo\.gl|goo\.gl\/maps/i.test(url); }
-// ==================== GIS LOGIC ====================
-function updateModelLimit() { _wpLimit = parseInt($('modelSelect').value); if(_currentWaypoints.length > _wpLimit) updateWaypointCountWarning(true); }
-function getDistanceMeters(p1, p2) { const R = 6371000; const dLat = (p2.lat - p1.lat) * Math.PI / 180; const dLon = (p2.lon - p1.lon) * Math.PI / 180; const a = Math.sin(dLat/2)**2 + Math.cos(p1.lat * Math.PI / 180) * Math.cos(p2.lat * Math.PI / 180) * Math.sin(dLon/2)**2; return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); }
-function calculateTurningAngle(p1, p2, p3) { const dx1 = p2.lon - p1.lon; const dy1 = p2.lat - p1.lat; const dx2 = p3.lon - p2.lon; const dy2 = p3.lat - p2.lat; const dot = dx1 * dx2 + dy1 * dy2; const mag1 = Math.sqrt(dx1 * dx1 + dy1 * dy1); const mag2 = Math.sqrt(dx2 * dx2 + dy2 * dy2); if (mag1 === 0 || mag2 === 0) return 0; const cosAngle = Math.max(-1, Math.min(1, dot / (mag1 * mag2))); return Math.acos(cosAngle) * (180 / Math.PI); }
-function motoOptimize(points, sourceType) {
-if (points.length <= 2) return points;
-addLog('Avvio semplificazione Moto-Optimized...', 'info');
-let filtered = [points[0]];
-for (let i = 1; i < points.length; i++) { if (getDistanceMeters(filtered[filtered.length-1], points[i]) >= 30) filtered.push(points[i]); }
-addLog(`Filtro 30m: ${points.length} → ${filtered.length}`, 'dim');
-const angularKept = [filtered[0]];
-for (let i = 1; i < filtered.length - 1; i++) { const angle = calculateTurningAngle(filtered[i-1], filtered[i], filtered[i+1]); if (angle < 160) angularKept.push(filtered[i]); }
-angularKept.push(filtered[filtered.length - 1]);
-let result = angularKept;
-if (result.length > _wpLimit) {
-      let tolerance = 0.00001;
-      let decimated = result;
-      while (decimated.length > _wpLimit && tolerance < 0.01) {
-        decimated = douglasPeucker(result, tolerance);
-        tolerance *= 1.8;
-      }
-      // fallback sicuro: se D-P non converge, tronca preservando start/end
-      if (decimated.length > _wpLimit) {
-        const step = (decimated.length - 2) / (_wpLimit - 2);
-        const capped = [decimated[0]];
-        for (let i = 1; i < _wpLimit - 1; i++) capped.push(decimated[Math.round(i * step)]);
-        capped.push(decimated[decimated.length - 1]);
-        decimated = capped;
-      }
-      result = decimated;
-      addLog(`⛔ Limite modello (${_wpLimit}): ridotto a ${result.length} tappe (D-P tol=${tolerance.toFixed(5)})`, 'warn');
-    }
-return result;
-}
-function perpendicularDistance(point, lineStart, lineEnd) {
-  const R = 6371000;
-  const latMid = (lineStart.lat + lineEnd.lat) / 2 * Math.PI / 180;
-  const toX = lon => lon * Math.PI / 180 * R * Math.cos(latMid);
-  const toY = lat => lat * Math.PI / 180 * R;
-  const px = toX(point.lon),   py = toY(point.lat);
-  const ax = toX(lineStart.lon), ay = toY(lineStart.lat);
-  const bx = toX(lineEnd.lon),   by = toY(lineEnd.lat);
-  const dx = bx - ax, dy = by - ay;
-  const mag = Math.sqrt(dx*dx + dy*dy);
-  if (mag === 0) return Math.sqrt((px-ax)**2 + (py-ay)**2);
-  const u = ((px-ax)*dx + (py-ay)*dy) / (mag*mag);
-  const cx = ax + u*dx, cy = ay + u*dy;
-  return Math.sqrt((px-cx)**2 + (py-cy)**2);
-}
-function douglasPeucker(points, tolerance) { if(points.length <= 2) return points; let maxDist = 0, maxIndex = 0; const start = points[0], end = points[points.length - 1]; for(let i = 1; i < points.length - 1; i++) { const dist = perpendicularDistance(points[i], start, end); if(dist > maxDist) { maxDist = dist; maxIndex = i; } } if(maxDist > tolerance) { const left = douglasPeucker(points.slice(0, maxIndex + 1), tolerance); const right = douglasPeucker(points.slice(maxIndex), tolerance); return left.slice(0, -1).concat(right); } else { return [start, end]; } }
-async function fetchRoute(waypoints) {
-  // ── Tentativo 1: Valhalla OSM (motorcycle profile) ──
+document.querySelectorAll('.fmt-btn').forEach(btn => { btn.addEventListener('click', () => setFormat(btn.dataset.fmt)); });
+
+// ██ ROUTING ENGINE con AbortController (Deepseek) ██
+async function fetchRoute(waypoints, signal = null) {
+  if(!waypoints || waypoints.length < 2) return null;
   try {
     const locations = waypoints.map(w => ({ lon: w.lon, lat: w.lat }));
-    const body = JSON.stringify({
-      locations,
-      costing: 'motorcycle',
-      directions_options: { units: 'km' },
-      shape_format: 'geojson'
-    });
-    const r = await fetch('https://valhalla.openstreetmap.de/route', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body
-    });
-    if (r.ok) {
+    const body = JSON.stringify({ locations, costing: 'motorcycle', directions_options: { units: 'km' }, shape_format: 'geojson' });
+    const r = await fetch('https://valhalla.openstreetmap.de/route', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body, signal: signal });
+    if(r.ok) {
       const data = await r.json();
       const shape = data?.trip?.legs?.flatMap(l => l.shape?.coordinates ?? []) ?? [];
-      if (shape.length > 0) {
-        addLog('Routing: Valhalla motorcycle ✓', 'ok');
-        const distance = data.trip.summary.length * 1000;
-        const duration = data.trip.summary.time;
-        return {
-          points: shape.map(c => ({ lon: c[0], lat: c[1] })),
-          distance,
-          duration
-        };
+      if(shape.length > 0) return { points: shape.map(c => ({ lon: c[0], lat: c[1] })), distance: data.trip.summary.length * 1000, duration: data.trip.summary.time };
+    }
+  } catch(e) { /* fallback */ }
+  const coords = waypoints.map(w => w.lon + ',' + w.lat).join(';');
+  const url = 'https://router.project-osrm.org/route/v1/driving/' + coords + '?overview=full&geometries=geojson';
+  const r = await fetch(url, { signal: signal || undefined });
+  if(!r.ok) throw new Error('Routing fallito');
+  const data = await r.json();
+  if(!data.routes?.[0]?.geometry) throw new Error('Nessuna geometria');
+  return { points: data.routes[0].geometry.coordinates.map(c => ({ lon: c[0], lat: c[1] })), distance: data.routes[0].distance, duration: data.routes[0].duration };
+}
+
+async function updateRoutingAndUI() {
+  if(_currentWaypoints.length < 2) return;
+  if(_pendingRouting) { _pendingRouting.abort?.(); _pendingRouting = null; }
+  const controller = new AbortController();
+  _pendingRouting = controller;
+  try {
+    addLog('🔄 Ricalcolo percorso stradale...', 'info');
+    const route = await fetchRoute(_currentWaypoints, controller.signal);
+    if(_pendingRouting !== controller) return;
+    _currentRoutePoints = route?.points || null;
+    _currentRouteDistance = route?.distance || 0;
+    _currentRouteDuration = route?.duration || 0;
+    $('statDist').textContent = (_currentRouteDistance/1000).toFixed(1) + ' km';
+    const hours = Math.floor(_currentRouteDuration / 3600);
+    const mins = Math.floor((_currentRouteDuration % 3600) / 60);
+    $('statTime').textContent = `${hours}h ${mins.toString().padStart(2,'0')}m`;
+    $('osrmStats').classList.add('on');
+    addLog(`✅ Rotta aggiornata: ${(_currentRouteDistance/1000).toFixed(1)} km`, 'ok');
+    initMap();
+    await regenerateOutput();
+  } catch(e) {
+    if(e.name === 'AbortError') return;
+    addLog(`⚠️ Routing fallito: ${e.message}`, 'warn');
+    _currentRoutePoints = null;
+    initMap();
+  } finally { if(_pendingRouting === controller) _pendingRouting = null; }
+}
+
+async function regenerateOutput() {
+  if(_currentWaypoints.length < 2) return;
+  if(_currentFormat === 'kmz' && _currentRoutePoints) {
+    const zip = new JSZip();
+    const kml = buildKMZString(_currentWaypoints, _name, _currentRoutePoints);
+    zip.file('doc.kml', kml);
+    _output = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 9 } });
+  } else if(_currentFormat === 'gpx') {
+    _output = buildGPXString(_currentWaypoints, _name, _currentRoutePoints);
+  } else if(_currentFormat === 'kmz' && !_currentRoutePoints) {
+    const zip = new JSZip();
+    const kml = buildKMZString(_currentWaypoints, _name, null);
+    zip.file('doc.kml', kml);
+    _output = await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 9 } });
+  }
+  $('dlLabel').textContent = 'Scarica ' + _name.replace(/\s+/g,'_') + '.' + _currentFormat;
+}
+
+function buildGPXString(wps, name, routePoints) {
+  if(routePoints && routePoints.length > 0) {
+    const trkpts = routePoints.map(p => ' <trkpt lat="' + p.lat.toFixed(6) + '" lon="' + p.lon.toFixed(6) + '"/>').join('\n');
+    return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 15.0" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${esc(name)}</name></metadata>\n<rte>\n<name>${esc(name)}</name>\n${wps.map(w => ' <rtept lat="' + w.lat.toFixed(6) + '" lon="' + w.lon.toFixed(6) + '"><name>' + esc(w.name) + '</name></rtept>').join('\n')}\n</rte>\n<trk>\n<name>${esc(name)} - Traccia</name>\n<trkseg>\n${trkpts}\n</trkseg>\n</trk>\n</gpx>`;
+  }
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 15.0" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${esc(name)}</name></metadata>\n<rte>\n<name>${esc(name)}</name>\n${wps.map(w => ' <rtept lat="' + w.lat.toFixed(6) + '" lon="' + w.lon.toFixed(6) + '"><name>' + esc(w.name) + '</name></rtept>').join('\n')}\n</rte>\n</gpx>`;
+}
+
+function buildKMZString(wps, name, routePoints) {
+  const routeCoords = routePoints ? routePoints.map(p => p.lon.toFixed(6) + ',' + p.lat.toFixed(6) + ',0').join('\n') : '';
+  const wpPlacemarks = wps.map((w, i) => ' <Placemark>\n<name>' + esc(w.name) + '</name>\n<description>Tappa ' + (i+1) + '</description>\n<Point>\n<coordinates>' + w.lon.toFixed(6) + ',' + w.lat.toFixed(6) + ',0</coordinates>\n</Point>\n</Placemark>').join('\n');
+  const linePlacemark = routePoints ? `<Placemark>\n<name>${esc(name)} - Percorso</name>\n<styleUrl>#motoLine</styleUrl>\n<LineString>\n<tessellate>1</tessellate>\n<coordinates>\n${routeCoords}\n</coordinates>\n</LineString>\n</Placemark>` : '';
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>${esc(name)}</name>\n<Style id="motoLine"><LineStyle><color>ff00a5ff</color><width>5</width></LineStyle></Style>\n${wpPlacemarks}\n${linePlacemark}\n</Document>\n</kml>`;
+}
+
+// ██ UI REFRESH COMPLETA ██
+async function fullStateRefresh() {
+  updateWaypointCountWarning();
+  await updateRoutingAndUI();
+  refreshInteractiveWaypointsDisplay();
+}
+
+function refreshInteractiveWaypointsDisplay() {
+  const list = $('wpList');
+  if(!list) return;
+  const oldScroll = list.scrollTop;
+  list.innerHTML = '';
+  const frag = document.createDocumentFragment();
+  _currentWaypoints.forEach((w, i) => {
+    const isF = i === 0, isL = i === _currentWaypoints.length - 1, isIntermediate = !isF && !isL;
+    const row = document.createElement('div');
+    row.className = 'wp-row anim' + (isIntermediate ? ' intermediate' : '');
+    if(isIntermediate) row.draggable = true;
+    row.dataset.index = i;
+    const deleteBtn = isIntermediate ? `<button class="wp-delete-btn" onclick="deleteWaypoint(${i}); event.stopPropagation();" title="Elimina tappa">✕</button>` : '';
+    row.innerHTML = `<div class="wp-line"></div><div class="wp-dot ${isF ? 'dot-s' : isL ? 'dot-e' : 'dot-m'}">${isF ? 'A' : isL ? 'B' : i}</div><div class="wp-info"><div class="wp-name" data-idx="${i}">${esc(w.name)}</div><div class="wp-coords">${w.lat.toFixed(5)}, ${w.lon.toFixed(5)}</div></div>${deleteBtn}`;
+    if(isIntermediate) {
+      row.addEventListener('dragstart', (e) => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', i); row.classList.add('dragging'); });
+      row.addEventListener('dragend', () => row.classList.remove('dragging'));
+      row.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; row.classList.add('drag-over'); });
+      row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
+      row.addEventListener('drop', (e) => { e.preventDefault(); row.classList.remove('drag-over'); const fromIdx = parseInt(e.dataTransfer.getData('text/plain')); const toIdx = parseInt(row.dataset.index); if(fromIdx !== toIdx && toIdx > 0 && toIdx < _currentWaypoints.length - 1) { const item = _currentWaypoints.splice(fromIdx, 1)[0]; _currentWaypoints.splice(toIdx, 0, item); fullStateRefresh(); } });
+    }
+    row.querySelector('.wp-name')?.addEventListener('click', (e) => { if(!isIntermediate) return; const nameSpan = e.currentTarget; const input = document.createElement('input'); input.type = 'text'; input.value = w.name; input.className = 'wp-name-input'; nameSpan.classList.add('editing'); nameSpan.innerHTML = ''; nameSpan.appendChild(input); input.focus(); const saveName = () => { _currentWaypoints[i].name = input.value.trim() || w.name; fullStateRefresh(); }; input.addEventListener('blur', saveName); input.addEventListener('keydown', (ev) => { if(ev.key === 'Enter') { ev.preventDefault(); saveName(); } }); });
+    frag.appendChild(row);
+  });
+  list.appendChild(frag);
+  list.scrollTop = oldScroll;
+  const badge = _currentWaypoints.length > 20 ? `<span class="wp-count-badge ${_currentWaypoints.length > _wpLimit ? 'critical' : ''}">⚠️ ${_currentWaypoints.length}/${_wpLimit}</span>` : (_currentWaypoints.length <= 20 ? `<span class="wp-count-badge ok">✓ Ottimale</span>` : '');
+  $('wpLabel').innerHTML = `Tappe (${_currentWaypoints.length})${badge}`;
+}
+
+function updateWaypointCountWarning() {
+  const count = _currentWaypoints.length, sm = $('statusMessage'), icon = sm.querySelector('.sm-icon'), title = sm.querySelector('.sm-body strong'), detail = sm.querySelector('.sm-body .sm-detail');
+  if(count <= 20) { sm.className = 'status-green on'; icon.textContent = '✅'; title.textContent = 'Percorso Ottimale'; detail.textContent = 'Sincronizzazione MyDrive garantita.'; }
+  else if(count <= 29) { sm.className = 'status-orange on'; icon.textContent = '⚠️'; title.textContent = 'Attenzione: vicino al limite MyDrive'; detail.textContent = `Hai ${count} tappe. MyDrive accetta massimo 29. Elimina quelle non essenziali.`; }
+  else { sm.className = 'status-red on'; icon.textContent = '🔴'; title.textContent = 'LIMITE SUPERATO'; detail.textContent = `MyDrive accetta massimo 29 tappe (ora ${count}). Il file verrà rifiutato. Riduci le tappe.`; }
+}
+
+// ██ DELETE WAYPOINT con UNDO TOAST (Cloude) ██
+async function deleteWaypoint(index) {
+  if(index === 0 || index >= _currentWaypoints.length - 1) { Swal.fire({ icon:'info', title:'Tappa protetta', text:'Start e Fine non eliminabili.', confirmButtonColor:'#1e5aa8' }); return; }
+  const waypointName = _currentWaypoints[index].name;
+  const result = await Swal.fire({ title:'Elimina tappa?', html:`<strong>${esc(waypointName)}</strong>?`, icon:'question', showCancelButton:true, confirmButtonText:'Sì, elimina', confirmButtonColor:'#ef4444', cancelButtonColor:'#6b7280' });
+  if(!result.isConfirmed) return;
+  
+  const originalBtnIcon = $('bIcon').innerHTML;
+  const originalBtnText = $('bText').textContent;
+  const backupWaypoints = [..._currentWaypoints];
+  const backupRoutePoints = _currentRoutePoints ? [..._currentRoutePoints] : null;
+  try {
+    const row = document.querySelector(`.wp-row[data-index="${index}"]`);
+    if (row) { row.classList.add('wp-deleting'); await sleep(200); }
+    _currentWaypoints.splice(index, 1);
+    addLog(`Tappa eliminata: "${waypointName}" (ora ${_currentWaypoints.length} tappe)`, 'ok');
+    $('convertBtn').disabled = true; $('bIcon').innerHTML = '<div class="spin"></div>'; $('bText').textContent = 'Rigenerazione…';
+    if (_currentFormat === 'kmz' && _currentWaypoints.length >= 2) {
+      try { const osrm = await fetchRoute(_currentWaypoints); _currentRoutePoints = osrm.points; } catch { _currentRoutePoints = null; }
+    } else if(_currentFormat === 'gpx') { _currentRoutePoints = null; }
+    await regenerateOutput();
+    await fullStateRefresh();
+    // UNDO TOAST
+    const toast = Swal.mixin({ toast: true, position: 'top-end', timer: 5000, showCloseButton: false, showConfirmButton: false, html: `<b>Tappa eliminata</b><br>${esc(waypointName)} rimossa.<br><a href="#" id="undoLink" style="color:var(--p);font-weight:600;margin-top:4px;display:inline-block;">↩ Annulla eliminazione</a>` });
+    toast.fire();
+    document.getElementById('undoLink')?.addEventListener('click', (e) => {
+      e.preventDefault(); Swal.close();
+      _currentWaypoints.splice(index, 0, backupWaypoints[index]);
+      _currentRoutePoints = backupRoutePoints;
+      regenerateOutput();
+      fullStateRefresh();
+    });
+  } catch (err) {
+    _currentWaypoints = backupWaypoints; _currentRoutePoints = backupRoutePoints;
+    addLog(`Errore eliminazione: ${err.message}`, 'warn');
+    refreshInteractiveWaypointsDisplay();
+    Swal.fire({ icon: 'error', title: 'Errore', text: 'Impossibile rigenerare il percorso. Ripristinato.', confirmButtonColor: '#1e5aa8' });
+  } finally {
+    $('convertBtn').disabled = false; $('bIcon').innerHTML = originalBtnIcon || '▶'; $('bText').textContent = originalBtnText || (_currentFormat === 'gpx' ? 'Esporta per TomTom' : 'Esporta per Google Earth');
+  }
+}
+
+// ██ AGGIUNTA TAPPA ██
+function toggleAddWaypointPanel() { $('addWaypointPanel').classList.toggle('open'); }
+function checkAndBlockLimitExceeded() {
+  if(_currentWaypoints.length >= _wpLimit) {
+    Swal.fire({ icon:'error', title:`Limite MyDrive raggiunto`, text:`MyDrive accetta massimo ${_wpLimit} tappe. Elimina qualche tappa intermedia prima di aggiungerne altre.`, confirmButtonColor:'#1e5aa8' });
+    return true;
+  }
+  return false;
+}
+async function addWaypointByAddress() { 
+  if(checkAndBlockLimitExceeded()) return;
+  const addr = $('newWpAddress').value.trim(); 
+  if(!addr) { Swal.fire({ icon:'warning', title:'Inserisci un indirizzo', text:'Digita un luogo da geocodificare', confirmButtonColor:'#1e5aa8' }); return; } 
+  addLog(`Geocodifica: "${addr}"`, 'info'); 
+  try { 
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1&accept-language=it`, { headers: { 'User-Agent': 'TomTomRouteConverter/15.0' } }); 
+    if(!r.ok) throw new Error(); 
+    const data = await r.json(); 
+    if(!data.length) throw new Error('Non trovato'); 
+    const newWp = { lat: parseFloat(data[0].lat), lon: parseFloat(data[0].lon), name: data[0].display_name.split(',')[0].trim() }; 
+    _currentWaypoints.splice(_currentWaypoints.length - 1, 0, newWp); 
+    $('newWpAddress').value = ''; 
+    toggleAddWaypointPanel(); 
+    await fullStateRefresh(); 
+    addLog(`➕ Aggiunta tappa: ${newWp.name}`, 'ok'); 
+  } catch(e) { Swal.fire({ icon:'error', title:'Errore', text:'Impossibile trovare questa località.', confirmButtonColor:'#1e5aa8' }); } 
+}
+async function addWaypointByCoords() { 
+  if(checkAndBlockLimitExceeded()) return;
+  const input = $('newWpAddress').value.trim(); 
+  const match = input.match(/^(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)$/); 
+  if(!match) { Swal.fire({ icon:'warning', title:'Formato coordinate', text:'Usa formato: lat,lon (es: 45.464,9.190)', confirmButtonColor:'#1e5aa8' }); return; } 
+  const lat = parseFloat(match[1]), lon = parseFloat(match[2]); 
+  if(isNaN(lat) || isNaN(lon)) return; 
+  _currentWaypoints.splice(_currentWaypoints.length - 1, 0, { lat, lon, name: `${lat.toFixed(5)},${lon.toFixed(5)}` }); 
+  $('newWpAddress').value = ''; 
+  toggleAddWaypointPanel(); 
+  await fullStateRefresh(); 
+  addLog(`➕ Aggiunte coordinate`, 'ok'); 
+}
+
+// ██ MAPPA ██
+function initMap() {
+  if(!$('mapPreview').classList.contains('on') || _currentWaypoints.length < 2) return;
+  if(!_map) { _map = L.map('mapPreview').setView([_currentWaypoints[0].lat, _currentWaypoints[0].lon], 10); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(_map); }
+  _map.eachLayer(l => _map.removeLayer(l));
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(_map);
+  if(_currentRoutePoints && _currentRoutePoints.length > 0) L.polyline(_currentRoutePoints.map(p => [p.lat, p.lon]), { color: '#1e5aa8', weight: 5 }).addTo(_map);
+  else L.polyline(_currentWaypoints.map(w => [w.lat, w.lon]), { color: '#f59e0b', weight: 3, dashArray: '5, 10' }).addTo(_map);
+  _currentWaypoints.forEach((w, i) => { L.marker([w.lat, w.lon]).addTo(_map).bindPopup(`<b>${w.name}</b><br>Tappa ${i+1}`); });
+  _map.fitBounds(L.latLngBounds(_currentWaypoints.map(w => [w.lat, w.lon])).pad(0.1));
+  _map.invalidateSize();
+}
+
+// ██ PARSER ROBUSTI (Cloude parseQuery + unificato) ██
+async function geocode(q) { let query = q.trim(); addLog(`Geocoding: "${query}"`, 'info'); const attempts = [query, query.replace(/,\s*\d{5}.*$/, '').trim(), query.split(',')[0].replace(/\d+/g, '').trim(), query.replace(/[^a-zA-Z\s]/g, ' ').replace(/\s+/g, ' ').trim()]; for(let i=0;i<attempts.length;i++) { const attemptQuery=attempts[i]; if(!attemptQuery||attemptQuery.length<3) continue; try { addLog(` Tentativo ${i+1}: "${attemptQuery}"`, 'dim'); const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(attemptQuery)}&format=json&limit=1&accept-language=it,en`,{headers:{'User-Agent':'TomTomRouteConverter/15.0'}}); if(r.ok){const data=await r.json(); if(data&&data.length>0) return{lat:parseFloat(data[0].lat),lon:parseFloat(data[0].lon),name:data[0].display_name.split(',')[0].trim()}; } } catch(e){} } throw new Error(`Impossibile geocodificare: "${q}"`); }
+function cleanStopName(stop){if(!stop)return stop;return stop.replace(/,\s*\d{4,5}(?=\s*[,)]|$)/g,'').replace(/\s{2,}/g,' ').trim();}
+function parseDir(url){const match=url.match(/maps\/dir\/([^@?]+)/);if(!match) return null; return match[1].split('/').map(s=>decodeURIComponent(s.replace(/\+/g,' ')).trim()).filter(s=>s&&s.length>0&&!s.startsWith('@')&&!s.includes('data=')).map(cleanStopName).filter(s=>s&&s.length>0);}
+function parseAppleMaps(url){try{const u=new URL(url);if(!u.host.includes('apple.com'))return null;const stops=[];if(u.searchParams.get('q'))stops.push(u.searchParams.get('q'));if(u.searchParams.get('daddr'))stops.push(u.searchParams.get('daddr'));const sll=u.searchParams.get('sll')||u.searchParams.get('ll');if(sll){const[lat,lon]=sll.split(',');stops.unshift(`${lat},${lon}`);}return stops.length>=2?{stops,src:'Apple Maps'}:null;}catch(e){return null;}}
+function parseWaze(url){try{const u=new URL(url);if(!u.host.includes('waze.com'))return null;const from=u.searchParams.get('from'),to=u.searchParams.get('to');if(from&&to)return{stops:[from,to],src:'Waze'};if(u.searchParams.get('ll'))return{stops:[u.searchParams.get('ll')],src:'Waze (partial)'};return null;}catch(e){return null;}}
+function parseGoogleQuery(url){ try { const u=new URL(url); let stops=[]; if(u.searchParams.get('origin')) stops.push(u.searchParams.get('origin')); const w=u.searchParams.get('waypoints'); if(w) stops.push(...w.split('|').filter(Boolean)); if(u.searchParams.get('destination')) stops.push(u.searchParams.get('destination')); if(stops.length>=2) return {stops, src:'Google Maps (query)'}; const pathMatch=url.match(/\/dir\/([^\/?]+)\/([^\/?]+)/); if(pathMatch && pathMatch[1] && pathMatch[2]) return {stops:[decodeURIComponent(pathMatch[1].replace(/\+/g,' ')), decodeURIComponent(pathMatch[2].replace(/\+/g,' '))], src:'Google Maps (path)'}; return null; } catch(e){ return null; } }
+function extractStops(raw){ let url=raw.trim(); if(!/^https?:\/\//i.test(url)) url='https://'+url; const apple=parseAppleMaps(url); if(apple) return apple; const waze=parseWaze(url); if(waze&&waze.stops.length>=2) return waze; const google=parseGoogleQuery(url); if(google && google.stops.length>=2) return google; if(url.includes('maps/dir/')){ const stops=parseDir(url); if(stops&&stops.length>=2) return{stops, src:'Google Maps (path)'};} return null; }
+function isShortUrl(url){ return /maps\.app\.goo\.gl|goo\.gl\/maps/i.test(url); }
+function coordStr(s){ const m=s.match(/^(-?\d+\.?\d*)[,\s]+(-?\d+\.?\d*)$/); return m?{lat:parseFloat(m[1]),lon:parseFloat(m[2]),name:s}:null; }
+function isBlob(s){ return s.includes('data=')||s.includes('!3m')||s.includes('authuser='); }
+function blobCoords(s){ const re=/!1d(-?\d+\.\d+)!2d(-?\d+\.\d+)/g, pairs=[]; let m; while((m=re.exec(s))!==null) pairs.push({lon:parseFloat(m[1]),lat:parseFloat(m[2])}); if(!pairs.length) return null; const p=pairs[pairs.length-1]; return{lat:p.lat,lon:p.lon,name:p.lat.toFixed(5)+','+p.lon.toFixed(5)}; }
+function extractAllWaypointCoords(url){ const re=/!1d(-?\d+\.\d+)!2d(-?\d+\.\d+)/g; const coords=[]; let m; while((m=re.exec(url))!==null) coords.push({lon:parseFloat(m[1]),lat:parseFloat(m[2])}); return coords; }
+function parseGPX(xmlStr){ const doc=new DOMParser().parseFromString(xmlStr,"text/xml"); let pts=[]; const rtepts=doc.getElementsByTagName('rtept'); if(rtepts.length>0){ for(let n of rtepts) pts.push({lat:parseFloat(n.getAttribute('lat')),lon:parseFloat(n.getAttribute('lon')),name:n.getElementsByTagName('name')[0]?.textContent||'Tappa'}); } else { const wpts=doc.getElementsByTagName('wpt'); if(wpts.length>0){ for(let n of wpts) pts.push({lat:parseFloat(n.getAttribute('lat')),lon:parseFloat(n.getAttribute('lon')),name:n.getElementsByTagName('name')[0]?.textContent||'Punto'}); } else { const trkpts=doc.getElementsByTagName('trkpt'); for(let n of trkpts) pts.push({lat:parseFloat(n.getAttribute('lat')),lon:parseFloat(n.getAttribute('lon')),name:'Pt'}); if(pts.length>50) pts=pts.filter((_,i)=>i%Math.floor(pts.length/30)===0); } } return pts; }
+function parseKML(xmlStr){ const doc=new DOMParser().parseFromString(xmlStr,"text/xml"); const placemarks=doc.getElementsByTagName('Placemark'); let pts=[]; for(let pm of placemarks){ const pt=pm.getElementsByTagName('Point')[0]; if(pt){ const coords=pt.getElementsByTagName('coordinates')[0]?.textContent?.trim(); if(coords){ const[lon,lat]=coords.split(',').map(Number); pts.push({lat,lon,name:pm.getElementsByTagName('name')[0]?.textContent||'Luogo'}); } } } if(pts.length===0){ const lines=doc.getElementsByTagName('LineString'); if(lines.length>0){ const coords=lines[0].getElementsByTagName('coordinates')[0]?.textContent?.trim().split(/\s+/); if(coords&&coords.length>0){ pts.push({lat:parseFloat(coords[0].split(',')[1]),lon:parseFloat(coords[0].split(',')[0]),name:'Inizio'}); if(coords.length>1) pts.push({lat:parseFloat(coords[coords.length-1].split(',')[1]),lon:parseFloat(coords[coords.length-1].split(',')[0]),name:'Fine'}); } } } return pts; }
+async function parseFile(file){ const ext=file.name.split('.').pop().toLowerCase(); if(ext==='gpx'||ext==='xml') return parseGPX(await file.text()); else if(ext==='kmz'){ const zip=await JSZip.loadAsync(file); if(!zip.file('doc.kml')) throw new Error('KMZ non valido: manca doc.kml'); return parseKML(await zip.file('doc.kml').async('string')); } else if(ext==='kml') return parseKML(await file.text()); throw new Error('Formato non supportato'); }
+
+// ██ MOTO OPTIMIZE con fallback capped array (Cloude) ██
+function getDistanceMeters(p1,p2){ const R=6371000; const dLat=(p2.lat-p1.lat)*Math.PI/180; const dLon=(p2.lon-p1.lon)*Math.PI/180; const a=Math.sin(dLat/2)**2+Math.cos(p1.lat*Math.PI/180)*Math.cos(p2.lat*Math.PI/180)*Math.sin(dLon/2)**2; return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a)); }
+function calculateTurningAngle(p1,p2,p3){ const dx1=p2.lon-p1.lon,dy1=p2.lat-p1.lat,dx2=p3.lon-p2.lon,dy2=p3.lat-p2.lat; const dot=dx1*dx2+dy1*dy2; const mag1=Math.sqrt(dx1*dx1+dy1*dy1),mag2=Math.sqrt(dx2*dx2+dy2*dy2); if(mag1===0||mag2===0) return 0; const cosAngle=Math.max(-1,Math.min(1,dot/(mag1*mag2))); return Math.acos(cosAngle)*(180/Math.PI); }
+function perpendicularDistance(point,lineStart,lineEnd){ const R=6371000; const latMid=(lineStart.lat+lineEnd.lat)/2*Math.PI/180; const toX=lon=>lon*Math.PI/180*R*Math.cos(latMid); const toY=lat=>lat*Math.PI/180*R; const px=toX(point.lon),py=toY(point.lat); const ax=toX(lineStart.lon),ay=toY(lineStart.lat); const bx=toX(lineEnd.lon),by=toY(lineEnd.lat); const dx=bx-ax,dy=by-ay; const mag=Math.sqrt(dx*dx+dy*dy); if(mag===0) return Math.sqrt((px-ax)**2+(py-ay)**2); const u=((px-ax)*dx+(py-ay)*dy)/(mag*mag); const cx=ax+u*dx,cy=ay+u*dy; return Math.sqrt((px-cx)**2+(py-cy)**2); }
+function douglasPeucker(points, tolerance){ if(points.length<=2) return points; let maxDist=0,maxIndex=0; const start=points[0],end=points[points.length-1]; for(let i=1;i<points.length-1;i++){ const dist=perpendicularDistance(points[i],start,end); if(dist>maxDist){ maxDist=dist; maxIndex=i; } } if(maxDist>tolerance){ const left=douglasPeucker(points.slice(0,maxIndex+1),tolerance); const right=douglasPeucker(points.slice(maxIndex),tolerance); return left.slice(0,-1).concat(right); } else { return [start,end]; } }
+function motoOptimize(points,sourceType){ if(points.length<=2) return points; addLog('Avvio semplificazione Moto-Optimized...','info'); let filtered=[points[0]]; for(let i=1;i<points.length;i++){ if(getDistanceMeters(filtered[filtered.length-1],points[i])>=30) filtered.push(points[i]); } addLog(`Filtro 30m: ${points.length} → ${filtered.length}`,'dim'); const angularKept=[filtered[0]]; for(let i=1;i<filtered.length-1;i++){ const angle=calculateTurningAngle(filtered[i-1],filtered[i],filtered[i+1]); if(angle<160) angularKept.push(filtered[i]); } angularKept.push(filtered[filtered.length-1]); let result=angularKept; if(result.length>_wpLimit){ addLog(`⚠️ Il percorso supera il limite di ${_wpLimit} tappe di MyDrive. Applico riduzione automatica...`,'warn'); let tolerance=0.00001; let decimated=result; while(decimated.length>_wpLimit&&tolerance<0.01){ decimated=douglasPeucker(result,tolerance); tolerance*=1.8; } if(decimated.length>_wpLimit){ const step=(decimated.length-2)/(_wpLimit-2); const capped=[decimated[0]]; for(let i=1;i<_wpLimit-1;i++) capped.push(decimated[Math.round(i*step)]); capped.push(decimated[decimated.length-1]); decimated=capped; } result=decimated; addLog(`⛔ PERCORSO ACCORCIATO a ${result.length} tappe per rispettare il limite MyDrive di ${_wpLimit} tappe.`,'warn'); } return result; }
+
+// ██ MAIN FLOW con blocco preventivo ██
+async function go() {
+  const file = $('fileInput').files[0];
+  let urlVal = $('urlIn').value.trim();
+  _name = $('nameIn').value.trim() || 'La mia rotta';
+  if(file && urlVal.length>0){ Swal.fire({icon:'warning',title:'Input ambiguo',text:'Scegli solo URL o file',confirmButtonColor:'#1e5aa8'}); return; }
+  if(!file && !urlVal){ Swal.fire({icon:'info',title:'Nessuna fonte',text:'Incolla un URL o carica un file GPX/KMZ',confirmButtonColor:'#1e5aa8'}); return; }
+  $('progressCard').classList.add('on'); $('errorCard').classList.remove('on'); $('statusMessage').classList.remove('on'); $('results').classList.remove('on'); $('logEl').innerHTML='';
+  const btn=$('convertBtn'); btn.disabled=true; $('bIcon').innerHTML='<div class="spin"></div>'; $('bText').textContent='Elaborazione…'; setProgress(5);
+  try{
+    let wps=[];
+    if(file){
+      addLog('Lettura file: '+file.name,'ok');
+      wps=await parseFile(file);
+      addLog('Trovate '+wps.length+' tappe nel file','ok'); setProgress(40);
+    } else {
+      if(isShortUrl(urlVal)){ urlVal=$('expandedUrlIn').value.trim(); if(!urlVal) throw new Error('Incolla la URL espansa'); }
+      const parsed=extractStops(urlVal); if(!parsed) throw new Error('URL non riconosciuta');
+      addLog('Fonte: '+parsed.src+' · '+parsed.stops.length+' tappe','ok'); setProgress(15);
+      const directCoordsList=extractAllWaypointCoords(urlVal);
+      if(directCoordsList.length===parsed.stops.length){
+        addLog('✅ Coordinate dirette dall\'URL','ok');
+        for(let i=0;i<parsed.stops.length;i++){ const c=directCoordsList[i]; wps.push({lat:c.lat,lon:c.lon,name:parsed.stops[i]}); }
+      } else {
+        addLog('⚠️ Geocoding in corso','info');
+        for(let i=0;i<parsed.stops.length;i++){
+          const s=parsed.stops[i]; const cd=coordStr(s);
+          if(cd){ wps.push(cd); addLog('↳ coordinate: '+cd.lat.toFixed(4)+', '+cd.lon.toFixed(4),'info'); }
+          else if(isBlob(s)){ const ex=blobCoords(s); if(ex){ wps.push(ex); addLog('↳ estratte dal blob','info'); } }
+          else{ const g=await geocode(s); wps.push(g); addLog('↳ '+g.name,'info'); if(i<parsed.stops.length-1) await sleep(1150); }
+          setProgress(15+Math.round(40*(i+1)/parsed.stops.length));
+        }
       }
     }
-  } catch(e) { addLog('Valhalla non raggiungibile, fallback OSRM…', 'info'); }
-
-  // ── Tentativo 2: OSRM demo (fallback) ──
-  const coords = waypoints.map(w => w.lon + ',' + w.lat).join(';');
-  const url = 'https://router.project-osrm.org/route/v1/driving/' + coords +
-              '?overview=full&geometries=geojson&alternatives=false';
-  const r = await fetch(url);
-  if (!r.ok) throw new Error('Errore OSRM');
-  const data = await r.json();
-  if (!data.routes?.[0]?.geometry) throw new Error('Impossibile ricostruire percorso');
-  addLog('Routing: OSRM driving (fallback) ✓', 'info');
-  return {
-    points: data.routes[0].geometry.coordinates.map(c => ({ lon: c[0], lat: c[1] })),
-    distance: data.routes[0].distance,
-    duration: data.routes[0].duration
-  };
-}
-// ==================== BUILDERS ====================
-function buildGPX(wps, name, routePoints = null) {
-if(routePoints && routePoints.length > 0) {
-const trkpts = routePoints.map(p => ' <trkpt lat="' + p.lat.toFixed(6) + '" lon="' + p.lon.toFixed(6) + '"/>').join('\n');
-return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 10.0" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${esc(name)}</name></metadata>\n<rte>\n<name>${esc(name)}</name>\n${wps.map(w => ' <rtept lat="' + w.lat.toFixed(6) + '" lon="' + w.lon.toFixed(6) + '"><name>' + esc(w.name) + '</name></rtept>').join('\n')}\n</rte>\n<trk>\n<name>${esc(name)} - Traccia</name>\n<trkseg>\n${trkpts}\n</trkseg>\n</trk>\n</gpx>`;
-}
-return `<?xml version="1.0" encoding="UTF-8"?>\n<gpx version="1.1" creator="TomTom Route Converter 10.0" xmlns="http://www.topografix.com/GPX/1/1">\n<metadata><name>${esc(name)}</name></metadata>\n<rte>\n<name>${esc(name)}</name>\n${wps.map(w => ' <rtept lat="' + w.lat.toFixed(6) + '" lon="' + w.lon.toFixed(6) + '"><name>' + esc(w.name) + '</name></rtept>').join('\n')}\n</rte>\n</gpx>`;
-}
-async function buildKMZ(wps, name, routePoints) {
-const routeCoords = routePoints.map(p => p.lon.toFixed(6) + ',' + p.lat.toFixed(6) + ',0').join('\n');
-const wpPlacemarks = wps.map((w, i) => ' <Placemark>\n<name>' + esc(w.name) + '</name>\n<description>Tappa ' + (i+1) + '</description>\n<Point>\n<coordinates>' + w.lon.toFixed(6) + ',' + w.lat.toFixed(6) + ',0</coordinates>\n</Point>\n</Placemark>').join('\n');
-const kml = `<?xml version="1.0" encoding="UTF-8"?>\n<kml xmlns="http://www.opengis.net/kml/2.2">\n<Document>\n<name>${esc(name)}</name>\n<Style id="motoLine"><LineStyle><color>ff00a5ff</color><width>5</width></LineStyle></Style>\n${wpPlacemarks}\n<Placemark>\n<name>${esc(name)} - Percorso</name>\n<styleUrl>#motoLine</styleUrl>\n<LineString>\n<tessellate>1</tessellate>\n<coordinates>\n${routeCoords}\n</coordinates>\n</LineString>\n</Placemark>\n</Document>\n</kml>`;
-const zip = new JSZip(); zip.file('doc.kml', kml);
-return await zip.generateAsync({ type: 'blob', compression: 'DEFLATE', compressionOptions: { level: 9 } });
-}
-// ==================== STATE, LOG & UI ====================
-function setProgress(p) { $('progBar').style.width = p + '%'; }
-function addLog(msg, t='dim') {
-const icons = { ok:'●', info:'◆', dim:'○', warn:'◆' };
-const d = document.createElement('div'); d.className = 'log-row l-' + t;
-d.innerHTML = '<span class="d">' + (icons[t]||'○') + '</span><span>' + msg + '</span>';
-$('logEl').appendChild(d); $('logEl').scrollTop = 9999;
-}
-function refreshInteractiveWaypointsDisplay(showWarningIfNeeded = false) {
-const list = $('wpList');
-const oldScroll = list.scrollTop;
-list.innerHTML = '';
-list.classList.add('modifiable');
-const frag = document.createDocumentFragment();
-_currentWaypoints.forEach((w, i) => {
-const isF = i === 0; const isL = i === _currentWaypoints.length - 1;
-const isIntermediate = !isF && !isL;
-const row = document.createElement('div');
-row.className = 'wp-row anim' + (isIntermediate ? ' intermediate' : '');
-row.draggable = isIntermediate;
-row.dataset.index = i;
-const deleteBtn = isIntermediate ? `<button class="wp-delete-btn" onclick="deleteWaypoint(${i}); event.stopPropagation();" title="Elimina tappa" aria-label="Elimina ${esc(w.name)}">✕</button>` : '';
-row.innerHTML = `
-<div class="wp-line"></div>
-<div class="wp-dot ${isF ? 'dot-s' : isL ? 'dot-e' : 'dot-m'}">${isF ? 'A' : isL ? 'B' : i}</div>
-<div class="wp-info">
-<div class="wp-name" data-idx="${i}">${esc(w.name)}</div>
-<div class="wp-coords">${w.lat.toFixed(5)}, ${w.lon.toFixed(5)}</div>
-</div>
-${deleteBtn}
-`;
-if(isIntermediate) {
-row.addEventListener('dragstart', (e) => { e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', i); row.classList.add('dragging'); });
-row.addEventListener('dragend', () => row.classList.remove('dragging'));
-row.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; row.classList.add('drag-over'); });
-row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
-row.addEventListener('drop', async (e) => {
-e.preventDefault(); row.classList.remove('drag-over');
-const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
-const toIdx = parseInt(row.dataset.index);
-if(fromIdx !== toIdx && toIdx > 0 && toIdx < _currentWaypoints.length - 1) {
-const item = _currentWaypoints.splice(fromIdx, 1)[0];
-_currentWaypoints.splice(toIdx, 0, item);
-_currentRoutePoints = null;
-refreshInteractiveWaypointsDisplay(false);
-// ── Ricalcola percorso, sincronizza mappa + stats + file ──
-const origIcon = $('bIcon').innerHTML;
-const origText = $('bText').textContent;
-$('convertBtn').disabled = true;
-$('bIcon').innerHTML = '<div class="spin"></div>';
-$('bText').textContent = 'Ricalcolo percorso…';
-try {
-if(_currentWaypoints.length >= 2) {
-const osrm = await fetchRoute(_currentWaypoints);
-_currentRoutePoints = osrm.points;
-$('statDist').textContent = (osrm.distance/1000).toFixed(1) + ' km';
-const hours = Math.floor(osrm.duration / 3600);
-const mins = Math.floor((osrm.duration % 3600) / 60);
-$('statTime').textContent = `${hours}h ${mins.toString().padStart(2,'0')}m`;
-addLog(`Percorso ricalcolato dopo riordino · ${_currentRoutePoints.length} pt`, 'ok');
-}
-await regenerateOutputFromCurrentWaypoints();
-initMap();
-} catch {
-_currentRoutePoints = null;
-addLog('Ricalcolo percorso fallito, mappa aggiornata con traccia diretta', 'info');
-try { await regenerateOutputFromCurrentWaypoints(); } catch(_) {}
-initMap();
-} finally {
-$('convertBtn').disabled = false;
-$('bIcon').innerHTML = origIcon || '▶';
-$('bText').textContent = origText || (_currentFormat === 'gpx' ? 'Esporta per TomTom' : 'Esporta per Google Earth');
-}
-}
-});
-}
-row.querySelector('.wp-name')?.addEventListener('click', (e) => {
-if(!isIntermediate) return;
-const nameSpan = e.currentTarget;
-const input = document.createElement('input');
-input.type = 'text'; input.value = w.name; input.className = 'wp-name-input';
-nameSpan.classList.add('editing'); nameSpan.innerHTML = ''; nameSpan.appendChild(input); input.focus();
-const saveName = () => {
-const newName = input.value.trim() || w.name;
-if(newName !== _currentWaypoints[i].name) {
-  _currentWaypoints[i].name = newName;
-  regenerateOutputFromCurrentWaypoints();
-  initMap(); // sincronizza popup marker
-}
-refreshInteractiveWaypointsDisplay();
-};
-input.addEventListener('blur', saveName);
-input.addEventListener('keydown', (ev) => { if(ev.key === 'Enter') { ev.preventDefault(); saveName(); } });
-});
-frag.appendChild(row);
-});
-list.appendChild(frag);
-list.scrollTop = oldScroll;
-$('wpLabel').innerHTML = `Tappe (${_currentWaypoints.length})` + (showWarningIfNeeded && _currentWaypoints.length > 20 ? `<span class="wp-count-badge ${_currentWaypoints.length > _wpLimit ? 'critical' : ''}">⚠️ ${_currentWaypoints.length}/${_wpLimit}</span>` : _currentWaypoints.length <= 20 ? `<span class="wp-count-badge ok">✓ Ottimale</span>` : '');
-updateWaypointCountWarning(showWarningIfNeeded);
-$('dlLabel').textContent = 'Scarica ' + _name.replace(/\s+/g,'_') + '.' + _currentFormat;
-}
-function updateWaypointCountWarning(showIfNeeded = false) {
-const count = _currentWaypoints.length; const sm = $('statusMessage');
-const icon = sm.querySelector('.sm-icon'), title = sm.querySelector('.sm-body strong'), detail = sm.querySelector('.sm-body .sm-detail');
-if (count <= 20) { sm.className = 'status-green on'; icon.textContent = '✅'; title.textContent = 'Percorso Ottimale'; detail.textContent = 'Sincronizzazione MyDrive garantita.'; }
-else if (count <= _wpLimit) { sm.className = 'status-orange on'; icon.textContent = '⚠️'; title.textContent = 'Attenzione'; detail.textContent = `Numero tappe elevato (${count}). 💡 Tocca il nome per rinominare o usa ✕ per rimuovere.`; }
-else { sm.className = 'status-red on'; icon.textContent = '🔴'; title.textContent = 'Limite superato'; detail.textContent = `Il percorso è stato ridotto a ${_wpLimit} tappe per il modello selezionato. Elimina tappe non essenziali.`; }
-}
-async function deleteWaypoint(index) {
-if (index === 0 || index >= _currentWaypoints.length - 1) {
-Swal.fire({ icon: 'info', title: 'Tappa protetta', text: 'Start (A) e Fine (B) non possono essere eliminati.', confirmButtonText: 'OK', confirmButtonColor: '#1e5aa8' });
-return;
-}
-const waypointName = _currentWaypoints[index].name;
-const result = await Swal.fire({
-title: 'Elimina tappa?', html: `Sei sicuro di voler eliminare:<br><strong style="color:var(--p)">${esc(waypointName)}</strong>?`,
-icon: 'question', showCancelButton: true, confirmButtonText: 'Sì, elimina', cancelButtonText: 'Annulla', confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280', reverseButtons: true
-});
-if (!result.isConfirmed) return;
-// FIX: Scope variables moved before try
-const originalBtnIcon = $('bIcon').innerHTML;
-const originalBtnText = $('bText').textContent;
-const backupWaypoints = [..._currentWaypoints];
-const backupRoutePoints = _currentRoutePoints ? [..._currentRoutePoints] : null;
-try {
-const row = document.querySelector(`.wp-row[data-index="${index}"]`);
-if (row) { row.classList.add('wp-deleting'); await sleep(200); }
-_currentWaypoints.splice(index, 1);
-addLog(`Tappa eliminata: "${waypointName}" (ora ${_currentWaypoints.length} tappe)`, 'ok');
-$('convertBtn').disabled = true; $('bIcon').innerHTML = '<div class="spin"></div>'; $('bText').textContent = 'Rigenerazione…';
-if (_currentFormat === 'kmz' && _currentWaypoints.length >= 2) {
-try { const osrm = await fetchRoute(_currentWaypoints); _currentRoutePoints = osrm.points; } catch { _currentRoutePoints = null; }
-} else if(_currentFormat === 'gpx') { _currentRoutePoints = null; }
-await regenerateOutputFromCurrentWaypoints();
-refreshInteractiveWaypointsDisplay(true);
-initMap();
-// Undo Toast
-const toast = Swal.mixin({ toast: true, position: 'top-end', timer: 5000, showCloseButton: false, showConfirmButton: false, html: `<b>Tappa eliminata</b><br>${esc(waypointName)} rimossa.<br><a href="#" id="undoLink" style="color:var(--p);font-weight:600;margin-top:4px;display:inline-block;">↩ Annulla eliminazione</a>` });
-toast.fire();
-document.getElementById('undoLink')?.addEventListener('click', (e) => {
-e.preventDefault(); Swal.close();
-_currentWaypoints.splice(index, 0, backupWaypoints[index]);
-_currentRoutePoints = backupRoutePoints;
-regenerateOutputFromCurrentWaypoints();
-refreshInteractiveWaypointsDisplay(true);
-initMap();
-});
-} catch (err) {
-_currentWaypoints = backupWaypoints; _currentRoutePoints = backupRoutePoints;
-addLog(`Errore eliminazione: ${err.message}`, 'warn');
-refreshInteractiveWaypointsDisplay(true);
-Swal.fire({ icon: 'error', title: 'Errore', text: 'Impossibile rigenerare il percorso. Ripristinato.', confirmButtonColor: '#1e5aa8' });
-} finally {
-$('convertBtn').disabled = false; $('bIcon').innerHTML = originalBtnIcon || '▶'; $('bText').textContent = originalBtnText || (_currentFormat === 'gpx' ? 'Esporta per TomTom' : 'Esporta per Google Earth');
-}
-}
-async function regenerateOutputFromCurrentWaypoints() {
-if (_currentWaypoints.length < 2) throw new Error('Meno di 2 tappe valide');
-if (_currentFormat === 'kmz') {
-_output = await buildKMZ(_currentWaypoints, _name, _currentRoutePoints);
-} else {
-_output = buildGPX(_currentWaypoints, _name, _currentRoutePoints);
-}
-$('dlLabel').textContent = 'Scarica ' + _name.replace(/\s+/g,'_') + '.' + _currentFormat;
-}
-// ==================== MAP LEAFLET ====================
-function initMap() {
-if(!$('mapPreview').classList.contains('on')) return;
-if(!_map) { _map = L.map('mapPreview').setView([_currentWaypoints[0].lat, _currentWaypoints[0].lon], 10); L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(_map); }
-_map.eachLayer(l => _map.removeLayer(l));
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap' }).addTo(_map);
-if(_currentRoutePoints && _currentRoutePoints.length > 0) {
-L.polyline(_currentRoutePoints.map(p => [p.lat, p.lon]), { color: '#1e5aa8', weight: 5 }).addTo(_map);
-} else {
-L.polyline(_currentWaypoints.map(w => [w.lat, w.lon]), { color: '#f59e0b', weight: 3, dashArray: '5, 10' }).addTo(_map);
-}
-_currentWaypoints.forEach((w, i) => { L.marker([w.lat, w.lon]).addTo(_map).bindPopup(`<b>${w.name}</b><br>Tappa ${i+1}`); });
-_map.fitBounds(L.latLngBounds(_currentWaypoints.map(w => [w.lat, w.lon])).pad(0.1));
-_map.invalidateSize();
-}
-// ==================== MAIN FLOW ====================
-async function go() {
-const file = $('fileInput').files[0];
-let urlVal = $('urlIn').value.trim();
-const nameVal = $('nameIn').value.trim() || 'La mia rotta';
-if (file && urlVal.length > 0) {
-Swal.fire({ icon: 'warning', title: 'Input ambiguo', text: 'Hai inserito sia un URL che un file GPX. Per procedere, mantieni solo una delle due fonti.', confirmButtonText: 'Ho capito', confirmButtonColor: '#1e5aa8' });
-return;
-}
-if(!file && !urlVal) { if($('fileBtn').classList.contains('has-file')) $('urlIn').focus(); else $('fileInput').focus(); return; }
-$('progressCard').classList.remove('on'); $('errorCard').classList.remove('on'); $('statusMessage').classList.remove('on','status-green','status-orange','status-red');
-$('results').classList.remove('on'); $('logEl').innerHTML = '';
-_output = ''; _name = nameVal;
-const btn = $('convertBtn'); btn.disabled = true; $('bIcon').innerHTML = '<div class="spin"></div>'; $('bText').textContent = 'Elaborazione…';
-$('progressCard').classList.add('on'); setProgress(5);
-try {
-let wps = []; let sourceType = file ? 'gpx' : 'url';
-if(file) {
-addLog('Lettura file: ' + file.name, 'ok');
-wps = await parseFile(file);
-addLog('Trovate ' + wps.length + ' tappe nel file', 'ok'); setProgress(40);
-} else {
-if(isShortUrl(urlVal)) { urlVal = $('expandedUrlIn').value.trim(); if(!urlVal) throw new Error('Incolla la URL espansa'); }
-const parsed = extractStops(urlVal); if(!parsed) throw new Error('URL non riconosciuta o incompleta');
-addLog('Fonte: ' + parsed.src + ' · ' + parsed.stops.length + ' tappe', 'ok'); setProgress(15);
-const directCoordsList = extractAllWaypointCoords(urlVal);
-if (directCoordsList.length === parsed.stops.length) {
-addLog('✅ Match perfetto: uso coordinate dirette dall\'URL', 'ok');
-for (let i = 0; i < parsed.stops.length; i++) { const c = directCoordsList[i]; wps.push({ lat: c.lat, lon: c.lon, name: parsed.stops[i] }); }
-} else {
-addLog('⚠️ Fallback geocoding', 'info');
-for(let i = 0; i < parsed.stops.length; i++) {
-const s = parsed.stops[i]; const cd = coordStr(s);
-if(cd) { wps.push(cd); addLog('↳ coordinate: ' + cd.lat.toFixed(4) + ', ' + cd.lon.toFixed(4), 'info'); }
-else if(isBlob(s)) { const ex = blobCoords(s); if(ex) { wps.push(ex); addLog('↳ estratte dal blob', 'info'); } }
-else { const g = await geocode(s); wps.push(g); addLog('↳ ' + g.name, 'info'); if (i < parsed.stops.length - 1) await sleep(1150); }
-setProgress(15 + Math.round(40 * (i+1) / parsed.stops.length));
-}
-}
-}
-if(wps.length < 2) throw new Error('Meno di 2 tappe valide');
-wps = motoOptimize(wps, sourceType);
-let routePoints = null; let dist = 0, dur = 0;
-if(_currentFormat === 'kmz') {
-addLog('Ricostruzione percorso stradale (OSRM)…', 'info'); setProgress(60);
-const osrm = await fetchRoute(wps); routePoints = osrm.points; dist = osrm.distance; dur = osrm.duration; setProgress(85);
-} else if(_currentFormat === 'gpx') {
-// GPX also fetches OSRM for stats if desired, but prompt says KMZ uses it. We'll keep stats for both if possible.
-try {
-const osrm = await fetchRoute(wps);
-dist = osrm.distance; dur = osrm.duration;
-routePoints = osrm.points; // Optional for GPX tracking
-} catch { /* silent fail for stats */ }
-}
-if(_currentFormat === 'kmz') { _output = await buildKMZ(wps, nameVal, routePoints); addLog('KMZ generato · ' + routePoints.length + ' punti traccia', 'ok'); }
-else { _output = buildGPX(wps, nameVal, routePoints); addLog('GPX generato · struttura <rte>/<rtept>', 'ok'); }
-setProgress(100);
-_currentWaypoints = [...wps]; _currentRoutePoints = routePoints;
-$('statDist').textContent = (dist/1000).toFixed(1) + ' km';
-const hours = Math.floor(dur / 3600); const mins = Math.floor((dur % 3600) / 60);
-$('statTime').textContent = `${hours}h ${mins.toString().padStart(2,'0')}m`;
-$('osrmStats').classList.add('on');
-$('mapPreview').classList.add('on');
-refreshInteractiveWaypointsDisplay(true);
-setTimeout(() => { $('results').classList.add('on'); initMap(); }, 250);
-saveToHistory();
-} catch(err) {
-$('progressCard').classList.remove('on'); $('errorTxt').textContent = err.message; $('errorCard').classList.add('on');
-} finally {
-btn.disabled = false; $('bIcon').textContent = '▶'; $('bText').textContent = _currentFormat === 'gpx' ? 'Esporta per TomTom' : 'Esporta per Google Earth';
-}
-}
-// ==================== DOWNLOAD STANDARD ====================
-function download() {
-if(!_output) return;
-Swal.fire({ icon: 'success', title: `Download avviato ✓`, html: `<strong>${esc(_name)}.${_currentFormat}</strong><br>${_currentWaypoints.length} tappe · Formato ${_currentFormat.toUpperCase()}`, timer: 2000, showConfirmButton: false, toast: true, position: 'top-end' });
-const fn = _name.replace(/\s+/g,'_') + '.' + _currentFormat;
-const blob = _currentFormat === 'kmz' ? _output : new Blob([_output], { type: 'application/gpx+xml' });
-const _dlUrl = URL.createObjectURL(blob);
-const a = Object.assign(document.createElement('a'), { href: _dlUrl, download: fn });
-document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(() => URL.revokeObjectURL(_dlUrl), 30000);
+    if(wps.length<2) throw new Error('Meno di 2 tappe valide');
+    if(wps.length > _wpLimit) {
+      const confirmReduce = await Swal.fire({ title: `Limite MyDrive superato (${wps.length}/${_wpLimit})`, text: `Il percorso ha ${wps.length} tappe, ma MyDrive accetta massimo ${_wpLimit}. Il tool applicherà una riduzione automatica, ma potresti perdere alcune tappe intermedie. Procedere?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Sì, riduci automaticamente', cancelButtonText: 'Annulla e modifica', confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280' });
+      if (!confirmReduce.isConfirmed) throw new Error('Operazione annullata: superato limite MyDrive');
+    }
+    wps = motoOptimize(wps, file ? 'gpx' : 'url');
+    _currentWaypoints = [...wps];
+    $('mapPreview').classList.add('on');
+    $('results').classList.add('on');
+    setProgress(70);
+    await fullStateRefresh();
+    setProgress(100);
+    saveToHistory();
+  } catch(err){ $('progressCard').classList.remove('on'); $('errorTxt').textContent=err.message; $('errorCard').classList.add('on'); }
+  finally{ btn.disabled=false; $('bIcon').textContent='▶'; $('bText').textContent=_currentFormat==='gpx'?'Esporta per TomTom':'Esporta per Google Earth'; }
 }
 
-
-// ── INIT ───────────────────────────────────────
-document.querySelectorAll('.fmt-btn').forEach(btn => { btn.addEventListener('click', () => setFormat(btn.dataset.fmt)); });
-if ('serviceWorker' in navigator) {
-  const swCode = `
-    const CACHE = 'route-conv-v15';
-    const PRECACHE = [
-      'https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js',
-      'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
-      'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css',
-      'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'
-    ];
-    self.addEventListener('install', e => e.waitUntil(
-      caches.open(CACHE).then(c => c.addAll(PRECACHE)).then(() => self.skipWaiting())
-    ));
-    self.addEventListener('activate', e => e.waitUntil(
-      caches.keys().then(keys => Promise.all(
-        keys.filter(k => k !== CACHE).map(k => caches.delete(k))
-      )).then(() => self.clients.claim())
-    ));
-    self.addEventListener('fetch', e => {
-      if (e.request.url.includes('nominatim') ||
-          e.request.url.includes('valhalla') ||
-          e.request.url.includes('osrm') ||
-          e.request.url.includes('openstreetmap.org/') ) return;
-      e.respondWith(
-        caches.match(e.request).then(cached => cached || fetch(e.request))
-      );
-    });
-  `;
-  const blob = new Blob([swCode], { type: 'application/javascript' });
-  navigator.serviceWorker.register(URL.createObjectURL(blob), { scope: './' })
-    .catch(() => {});
-}
-setFormat('gpx'); updateModelLimit();
-if(isIOS()) $('iosHint').classList.add('on');
+function saveToHistory(){ const entry={name:_name,url:$('urlIn').value,wps:_currentWaypoints.length,fmt:_currentFormat,ts:Date.now()}; _history.unshift(entry); if(_history.length>5) _history.pop(); try{ localStorage.setItem('routeConvHistory',JSON.stringify(_history)); } catch(e){} }
+function toggleHistory(){ const list=$('historyList'); if(list.classList.contains('open')){ list.classList.remove('open'); return; } list.innerHTML=''; if(_history.length===0) list.innerHTML='<div class="history-item" style="color:var(--text-muted);cursor:default;">Nessuna conversione recente</div>'; else{ _history.forEach((h,idx)=>{ const div=document.createElement('div'); div.className='history-item'; div.textContent=`${h.name} • ${h.wps} tappe • ${h.fmt.toUpperCase()}`; div.onclick=()=>{ $('nameIn').value=h.name; $('urlIn').value=h.url||''; go(); toggleHistory(); }; list.appendChild(div); }); } list.classList.add('open'); }
+document.addEventListener('click',(e)=>{ if(!e.target.closest('#historyDropdown')) $('historyList').classList.remove('open'); });
+document.addEventListener('dragover',(e)=>e.preventDefault()); document.addEventListener('drop',(e)=>e.preventDefault());
+const zone=$('fileBtn'); zone.addEventListener('dragover',(e)=>{ e.preventDefault(); zone.classList.add('has-file'); e.dataTransfer.dropEffect='copy'; }); zone.addEventListener('dragenter',(e)=>{ e.preventDefault(); zone.classList.add('has-file'); }); zone.addEventListener('dragleave',(e)=>{ if(!zone.contains(e.relatedTarget)) zone.classList.remove('has-file'); }); zone.addEventListener('drop',(e)=>{ e.preventDefault(); zone.classList.remove('has-file'); const file=e.dataTransfer.files[0]; if(!file) return; const ext=file.name.split('.').pop().toLowerCase(); if(!['gpx','kmz','kml','xml'].includes(ext)){ Swal.fire({icon:'warning',title:'Formato non supportato',text:'Trascina .gpx, .kmz o .kml',confirmButtonColor:'#1e5aa8'}); return; } const dt=new DataTransfer(); dt.items.add(file); $('fileInput').files=dt.files; $('fileInput').dispatchEvent(new Event('change')); });
+$('fileInput').addEventListener('change',function(e){ const file=e.target.files[0]; if(file){ const ext=file.name.split('.').pop().toLowerCase(); $('fileBtn').classList.add('has-file'); $('fileBtnText').textContent=file.name; $('fileInfo').classList.add('on'); $('fileInfo').textContent=`File ${ext.toUpperCase()} pronto · ${formatBytes(file.size)}`; $('urlIn').value=''; $('urlIn').placeholder='Disabilitato (file caricato)'; $('xUrl').classList.remove('on'); } else { $('fileBtn').classList.remove('has-file'); $('fileBtnText').textContent='Seleziona o trascina qui un file GPX, KMZ o KML'; $('fileInfo').classList.remove('on'); $('urlIn').placeholder='Incolla qui la URL (Google, Apple Maps, Waze)'; } });
+$('urlIn').addEventListener('input',function(){ const isShort=isShortUrl(this.value.trim()); $('shortUrlArea').style.display=isShort?'block':'none'; if(isShort&&!this.value.trim().endsWith('/')){ $('expandedUrlIn').focus(); } });
+function openExpander(){ const url=$('urlIn').value.trim(); if(url) window.open('https://www.expandurl.net/?url='+encodeURIComponent(url),'_blank'); }
+function download(){ if(!_output) return; Swal.fire({icon:'success', title:`Download avviato ✓`, html:`<strong>${esc(_name)}.${_currentFormat}</strong><br>${_currentWaypoints.length} tappe`, timer:2000, showConfirmButton:false, toast:true, position:'top-end' }); const fn=_name.replace(/\s+/g,'_')+'.'+_currentFormat; const blob=_currentFormat==='kmz'?_output:new Blob([_output],{type:'application/gpx+xml'}); const _dlUrl=URL.createObjectURL(blob); const a=Object.assign(document.createElement('a'),{href:_dlUrl,download:fn}); document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(_dlUrl),30000); }
+if('serviceWorker' in navigator){ const swCode=`const CACHE='route-conv-v15';const PRECACHE=['https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js','https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js','https://unpkg.com/leaflet@1.9.4/dist/leaflet.css','https://unpkg.com/leaflet@1.9.4/dist/leaflet.js'];self.addEventListener('install',e=>e.waitUntil(caches.open(CACHE).then(c=>c.addAll(PRECACHE)).then(()=>self.skipWaiting())));self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));self.addEventListener('fetch',e=>{if(e.request.url.includes('nominatim')||e.request.url.includes('valhalla')||e.request.url.includes('osrm')||e.request.url.includes('openstreetmap.org/'))return;e.respondWith(caches.match(e.request).then(cached=>cached||fetch(e.request)));});`; const blob=new Blob([swCode],{type:'application/javascript'}); navigator.serviceWorker.register(URL.createObjectURL(blob),{scope:'./'}).catch(()=>{}); }
+setFormat('gpx'); updateModelLimit(); if(isIOS()) $('iosHint').classList.add('on');
 </script>
 </body>
 </html>
