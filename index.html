@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Route Converter"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="description" content="Converti URL Google Maps, Apple Maps, Waze o file GPX/KMZ in rotte ottimizzate per TomTom MyDrive"/>
-<title>Route Converter By Valter - PWA v14</title>
+<title>Route Converter By Valter - PWA v15</title>
 <!-- ██ CDN SWEETALERT2, JSZIP, LEAFLET ██ -->
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -242,7 +242,7 @@ outline: none;
 <div class="header-title">Route Converter By Valter</div>
 <div class="header-sub">Ottimizzato per TomTom Rider</div>
 </div>
-<div class="header-pill">v14</div>
+<div class="header-pill">v15</div>
 </div>
 </header>
 <main>
@@ -750,16 +750,43 @@ row.addEventListener('dragstart', (e) => { e.dataTransfer.effectAllowed = 'move'
 row.addEventListener('dragend', () => row.classList.remove('dragging'));
 row.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; row.classList.add('drag-over'); });
 row.addEventListener('dragleave', () => row.classList.remove('drag-over'));
-row.addEventListener('drop', (e) => {
+row.addEventListener('drop', async (e) => {
 e.preventDefault(); row.classList.remove('drag-over');
 const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
 const toIdx = parseInt(row.dataset.index);
 if(fromIdx !== toIdx && toIdx > 0 && toIdx < _currentWaypoints.length - 1) {
 const item = _currentWaypoints.splice(fromIdx, 1)[0];
 _currentWaypoints.splice(toIdx, 0, item);
-if(_currentRoutePoints) _currentRoutePoints = null;
+_currentRoutePoints = null;
 refreshInteractiveWaypointsDisplay(false);
-regenerateOutputFromCurrentWaypoints();
+// ── Ricalcola percorso, sincronizza mappa + stats + file ──
+const origIcon = $('bIcon').innerHTML;
+const origText = $('bText').textContent;
+$('convertBtn').disabled = true;
+$('bIcon').innerHTML = '<div class="spin"></div>';
+$('bText').textContent = 'Ricalcolo percorso…';
+try {
+if(_currentWaypoints.length >= 2) {
+const osrm = await fetchRoute(_currentWaypoints);
+_currentRoutePoints = osrm.points;
+$('statDist').textContent = (osrm.distance/1000).toFixed(1) + ' km';
+const hours = Math.floor(osrm.duration / 3600);
+const mins = Math.floor((osrm.duration % 3600) / 60);
+$('statTime').textContent = `${hours}h ${mins.toString().padStart(2,'0')}m`;
+addLog(`Percorso ricalcolato dopo riordino · ${_currentRoutePoints.length} pt`, 'ok');
+}
+await regenerateOutputFromCurrentWaypoints();
+initMap();
+} catch {
+_currentRoutePoints = null;
+addLog('Ricalcolo percorso fallito, mappa aggiornata con traccia diretta', 'info');
+try { await regenerateOutputFromCurrentWaypoints(); } catch(_) {}
+initMap();
+} finally {
+$('convertBtn').disabled = false;
+$('bIcon').innerHTML = origIcon || '▶';
+$('bText').textContent = origText || (_currentFormat === 'gpx' ? 'Esporta per TomTom' : 'Esporta per Google Earth');
+}
 }
 });
 }
@@ -770,8 +797,13 @@ const input = document.createElement('input');
 input.type = 'text'; input.value = w.name; input.className = 'wp-name-input';
 nameSpan.classList.add('editing'); nameSpan.innerHTML = ''; nameSpan.appendChild(input); input.focus();
 const saveName = () => {
-_currentWaypoints[i].name = input.value.trim() || w.name;
-refreshInteractiveWaypointsDisplay(); regenerateOutputFromCurrentWaypoints();
+const newName = input.value.trim() || w.name;
+if(newName !== _currentWaypoints[i].name) {
+  _currentWaypoints[i].name = newName;
+  regenerateOutputFromCurrentWaypoints();
+  initMap(); // sincronizza popup marker
+}
+refreshInteractiveWaypointsDisplay();
 };
 input.addEventListener('blur', saveName);
 input.addEventListener('keydown', (ev) => { if(ev.key === 'Enter') { ev.preventDefault(); saveName(); } });
@@ -818,7 +850,7 @@ try { const osrm = await fetchRoute(_currentWaypoints); _currentRoutePoints = os
 } else if(_currentFormat === 'gpx') { _currentRoutePoints = null; }
 await regenerateOutputFromCurrentWaypoints();
 refreshInteractiveWaypointsDisplay(true);
-if(_currentRoutePoints) initMap();
+initMap();
 // Undo Toast
 const toast = Swal.mixin({ toast: true, position: 'top-end', timer: 5000, showCloseButton: false, showConfirmButton: false, html: `<b>Tappa eliminata</b><br>${esc(waypointName)} rimossa.<br><a href="#" id="undoLink" style="color:var(--p);font-weight:600;margin-top:4px;display:inline-block;">↩ Annulla eliminazione</a>` });
 toast.fire();
@@ -828,7 +860,7 @@ _currentWaypoints.splice(index, 0, backupWaypoints[index]);
 _currentRoutePoints = backupRoutePoints;
 regenerateOutputFromCurrentWaypoints();
 refreshInteractiveWaypointsDisplay(true);
-if(_currentRoutePoints) initMap();
+initMap();
 });
 } catch (err) {
 _currentWaypoints = backupWaypoints; _currentRoutePoints = backupRoutePoints;
@@ -951,7 +983,7 @@ document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeou
 document.querySelectorAll('.fmt-btn').forEach(btn => { btn.addEventListener('click', () => setFormat(btn.dataset.fmt)); });
 if ('serviceWorker' in navigator) {
   const swCode = `
-    const CACHE = 'route-conv-v14';
+    const CACHE = 'route-conv-v15';
     const PRECACHE = [
       'https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.all.min.js',
       'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js',
