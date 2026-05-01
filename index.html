@@ -9,6 +9,15 @@
 <meta name="apple-mobile-web-app-title" content="Route Converter"/>
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="description" content="Converti URL Google Maps, Apple Maps, Waze o file GPX/KMZ in rotte ottimizzate per TomTom MyDrive - Editor GIS Reattivo"/>
+
+<!-- ██ PWA: Manifest inline (data URI) — funziona su GitHub Pages single-file) ██ -->
+<link rel="manifest" href="data:application/manifest+json,%7B%22name%22%3A%22Route%20Converter%20By%20Valter%22%2C%22short_name%22%3A%22RouteConv%22%2C%22description%22%3A%22Converti%20GPX%2FKMZ%20per%20TomTom%20MyDrive%22%2C%22start_url%22%3A%22.%2F%22%2C%22display%22%3A%22standalone%22%2C%22background_color%22%3A%22%23f5f9ff%22%2C%22theme_color%22%3A%22%231e5aa8%22%2C%22orientation%22%3A%22portrait-primary%22%2C%22icons%22%3A%5B%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDE5MiAxOTIiPjxyZWN0IHdpZHRoPSIxOTIiIGhlaWdodD0iMTkyIiByeD0iMzgiIGZpbGw9IiMxZTVhYTgiLz48dGV4dCB4PSI5NiIgeT0iMTE2IiBmb250LXNpemU9IjEwMCIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZmlsbD0id2hpdGUiPvCfp6M8L3RleHQ%2BPC9zdmc%2B%22%2C%22sizes%22%3A%22192x192%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%2C%7B%22src%22%3A%22data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz48c3ZnIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyIgdmlld0JveD0iMCAwIDUxMiA1MTIiPjxyZWN0IHdpZHRoPSI1MTIiIGhlaWdodD0iNTEyIiByeD0iMTAyIiBmaWxsPSIjMWU1YWE4Ii8%2BPHRleHQgeD0iMjU2IiB5PSIzMDgiIGZvbnQtc2l6ZT0iMjY4IiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBmaWxsPSJ3aGl0ZSI%2B8J%2BnoywL3RleHQ%2BPC9zdmc%2B%22%2C%22sizes%22%3A%22512x512%22%2C%22type%22%3A%22image%2Fsvg%2Bxml%22%7D%5D%7D"/>
+
+<!-- ██ PWA: Apple Touch Icon inline SVG 180x180 ██ -->
+<!-- Apple Touch Icon: PNG 180x180 reale (iOS/Android "Aggiungi a schermata Home") -->
+<link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,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"/>
+<!-- Favicon PNG per tab browser -->
+<link rel="icon" type="image/png" sizes="180x180" href="data:image/png;base64,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"/>
 <title>Route Converter By Valter - v16.2 (7 Bug Fixed)</title>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
@@ -358,6 +367,59 @@ outline: none;
 <script>
 // ███████████████████████████████████████████████████████████████████████████
 // Route Converter By Valter v16.2 - 7 BUG FIXED
+
+// ████████████████████████████████████████████████████████
+// ██  PWA SERVICE WORKER INLINE (Blob URL)              ██
+// ██  Tecnica per single-file su GitHub Pages:          ██
+// ██  il SW viene compilato da stringa e registrato     ██
+// ██  tramite un URL oggetto temporaneo.                ██
+// ██  Questo sblocca il prompt di installazione         ██
+// ██  su Chrome/Android e Safari/iOS 16.4+              ██
+// ████████████████████████████████████████████████████████
+(function() {
+  if (!('serviceWorker' in navigator)) return;
+  const swCode = `
+    const CACHE = 'route-conv-v16';
+    const OFFLINE_URLS = [self.location.href.replace(/\\/sw-inline.*$/, '')];
+
+    self.addEventListener('install', e => {
+      self.skipWaiting();
+      e.waitUntil(
+        caches.open(CACHE).then(c => c.addAll(OFFLINE_URLS)).catch(() => {})
+      );
+    });
+
+    self.addEventListener('activate', e => {
+      e.waitUntil(
+        caches.keys().then(keys =>
+          Promise.all(keys.filter(k => k !== CACHE).map(k => caches.delete(k)))
+        ).then(() => clients.claim())
+      );
+    });
+
+    self.addEventListener('fetch', e => {
+      if (e.request.method !== 'GET') return;
+      e.respondWith(
+        fetch(e.request)
+          .then(res => {
+            const clone = res.clone();
+            caches.open(CACHE).then(c => c.put(e.request, clone)).catch(() => {});
+            return res;
+          })
+          .catch(() => caches.match(e.request))
+      );
+    });
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  const swUrl = URL.createObjectURL(blob);
+  navigator.serviceWorker.register(swUrl, { scope: './' })
+    .then(reg => {
+      console.log('[PWA] Service Worker registrato con successo:', reg.scope);
+      // Pulisce l'URL blob dopo la registrazione per liberare memoria
+      setTimeout(() => URL.revokeObjectURL(swUrl), 5000);
+    })
+    .catch(err => console.warn('[PWA] SW non registrato (normale in local file://):', err.message));
+})();
 // ███████████████████████████████████████████████████████████████████████████
 
 const $ = id => document.getElementById(id);
