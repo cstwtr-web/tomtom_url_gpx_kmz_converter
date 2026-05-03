@@ -176,6 +176,27 @@ input::placeholder { color: var(--text-muted); font-size: .85em; }
 #mapPreview.on { display: block; }
 #results { display: none; }
 #results.on { display: block; }
+/* Placeholder colonna destra — visibile finché results è nascosto */
+#mapPlaceholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 420px;
+  border: 2px dashed var(--border-light);
+  border-radius: var(--radius);
+  background: var(--input-bg);
+  color: var(--text-muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 32px;
+  transition: opacity .3s;
+}
+#mapPlaceholder .ph-icon { font-size: 48px; opacity: .45; }
+#mapPlaceholder .ph-title { font-weight: 600; color: var(--text-sec); font-size: 15px; }
+#mapPlaceholder .ph-sub { font-size: 12px; line-height: 1.7; max-width: 260px; }
+#mapPlaceholder.hidden { display: none; }
 .sec-label { font-size: 10px; color: var(--text-muted); text-transform: uppercase; letter-spacing: .12em; margin-bottom: 8px; padding-left: 2px; font-weight: 600; display: flex; align-items: center; justify-content: space-between; }
 .wp-count-badge { font-size: 10px; background: var(--p-light); padding: 2px 8px; border-radius: 20px; margin-left: 8px; color: var(--p); }
 .wp-count-badge.critical { background: var(--error-bg); color: var(--error); }
@@ -305,7 +326,7 @@ outline: none;
 <div class="header-title">Route Converter By Valter</div>
 <div class="header-sub">GIS Editor Reattivo · TomTom MyDrive (2026)</div>
 </div>
-<div class="header-pill">v8.0</div>
+<div class="header-pill">v8.1</div>
 </div>
 </header>
 <main>
@@ -317,7 +338,7 @@ outline: none;
   <div class="info">
     ⚠️ <b>IMPORTANTE:</b> TomTom MyDrive attuale accetta massimo <b>29 waypoint</b> (inclusi partenza e arrivo). Il tool rispetta questo limite.
     <br>📌 <b>Editor GIS Reattivo:</b> modifica tappe, trascina, rinomina, aggiungi punti: la mappa e il file si aggiornano in tempo reale.
-    <br>🔧 <b>v18.0:</b> Layout desktop a due wrapper (#leftCol + #rightCol): allineamento immediato colonna destra, una sola scrollbar di pagina, sticky perfetto. Mobile invariato.
+    <br>🔧 <b>v8.1:</b> Fix "Recenti" sovrapposto (spostato in leftCol). Placeholder elegante nella colonna mappa prima del calcolo. v8.0:</b> Layout desktop a due wrapper (#leftCol + #rightCol): allineamento immediato colonna destra, una sola scrollbar di pagina, sticky perfetto. Mobile invariato.
   </div>
 </div>
 <details class="accordion-card">
@@ -334,11 +355,11 @@ outline: none;
 </div>
 </div>
 </details>
+<div id="leftCol">
 <div id="historyDropdown">
 <button class="history-btn" onclick="toggleHistory()">📜 Recenti</button>
 <div class="history-list" id="historyList"></div>
 </div>
-<div id="leftCol">
 <div class="card" id="inputCard">
 <div class="field">
 <label class="label">1. DAI UN NOME AL VIAGGIO</label>
@@ -403,6 +424,11 @@ outline: none;
 </div>
 </div><!-- /#leftCol -->
 <div id="rightCol">
+<div id="mapPlaceholder">
+  <div class="ph-icon">🗺️</div>
+  <div class="ph-title">La mappa apparirà qui</div>
+  <div class="ph-sub">Inserisci un URL o carica un file GPX / KMZ / KML, poi premi <b>Esporta per TomTom</b></div>
+</div>
 <div id="results">
 <div class="sec-label" id="wpLabel">Tappe</div>
 <div id="osrmStats">
@@ -1301,7 +1327,7 @@ async function go() {
   _name = $('nameIn').value.trim() || 'La mia rotta';
   if(file && urlVal.length>0){ Swal.fire({icon:'warning',title:'Input ambiguo',text:'Scegli solo URL o file',confirmButtonColor:'#1e5aa8'}); return; }
   if(!file && !urlVal){ Swal.fire({icon:'info',title:'Nessuna fonte',text:'Incolla un URL o carica un file GPX/KMZ',confirmButtonColor:'#1e5aa8'}); return; }
-  $('progressCard').classList.add('on'); $('errorCard').classList.remove('on'); $('statusMessage').classList.remove('on'); $('results').classList.remove('on'); $('logEl').innerHTML='';
+  $('progressCard').classList.add('on'); $('errorCard').classList.remove('on'); $('statusMessage').classList.remove('on'); $('results').classList.remove('on'); $('mapPlaceholder').classList.remove('hidden'); $('logEl').innerHTML='';
   const btn=$('convertBtn'); btn.disabled=true; $('bIcon').innerHTML='<div class="spin"></div>'; $('bText').textContent='Elaborazione…'; setProgress(5);
   try{
     let wps=[];
@@ -1339,7 +1365,7 @@ async function go() {
     wps = motoOptimize(wps, file ? gpxSourceType : 'url');
     _currentWaypoints = [...wps];
     $('mapPreview').classList.add('on');
-    $('results').classList.add('on');
+    $('results').classList.add('on'); $('mapPlaceholder').classList.add('hidden');
     setProgress(70);
     await fullStateRefresh();
     setProgress(100);
