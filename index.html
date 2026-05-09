@@ -265,13 +265,6 @@ outline: none;
 .spin { width: 17px; height: 17px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .anim { animation: up .28s ease both; }
-/* ── Slider waypoint ── */
-#wpSliderWrap { display: none; background: var(--p-light); border: 1.5px solid var(--border-light); border-radius: 12px; padding: 12px 14px; margin-top: 10px; }
-#wpSliderWrap.on { display: block; }
-#wpSliderWrap .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: var(--text-sec); }
-#wpSliderWrap .slider-val { background: var(--p); color: #fff; border-radius: 8px; padding: 2px 9px; font-size: 13px; font-weight: 700; min-width: 32px; text-align: center; }
-#wpSlider { width: 100%; accent-color: var(--p); cursor: pointer; }
-#wpSliderWrap .slider-hints { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 2px; }
 @media (min-width: 640px) { .btn-convert { width: auto; padding: 13px 28px; white-space: nowrap; align-self: end; } .card { padding: 28px; } }
 
 /* ── Desktop two-column layout (v18.0) ──────────────────────────────────── */
@@ -333,20 +326,20 @@ outline: none;
 <div class="header-title">Route Converter By Valter</div>
 <div class="header-sub">GIS Editor Reattivo · TomTom MyDrive (2026)</div>
 </div>
-<div class="header-pill">v10.1</div>
+<div class="header-pill">v10.0</div>
 </div>
 </header>
 <main>
 <button class="info-toggle-btn" id="infoToggleBtn" onclick="toggleInfoPanel()" aria-expanded="false" aria-controls="infoPanel">
-  ℹ️ Note importanti &amp; changelog v10.1
+  ℹ️ Note importanti &amp; changelog v10.0
   <span class="info-toggle-arrow">▼</span>
 </button>
 <div class="info-panel" id="infoPanel" role="region" aria-labelledby="infoToggleBtn">
   <div class="info">
     ⚠️ <b>IMPORTANTE:</b> TomTom MyDrive Connect accetta massimo <b>21 waypoint</b>. Caricando via microSD/USB (ITN) il limite sale a <b>255 waypoint</b>. Il tool si adatta automaticamente alla modalità selezionata.
     <br>📌 <b>Editor GIS Reattivo:</b> modifica tappe, trascina, rinomina, aggiungi punti: la mappa e il file si aggiornano in tempo reale.
-    <br>🔧 <b>v10.1:</b> <b>SLIDER WAYPOINT INTERATTIVO</b> — su tracce GPX (trkpt) appare uno slider per scegliere visivamente il numero di waypoint estratti. Ricalcolo mappa e file in tempo reale. Doppia modalità MyDrive Connect (21/GPX) vs Navigatore microSD/USB (255/ITN).
-    <br>🔧 <b>v10.0:</b> Nuovo formato ITN nativo. Conversione URL→ITN e GPX→ITN.
+    <br>🔧 <b>v11.0:</b> <b>DOPPIA MODALITÀ</b> MyDrive Connect (21 tappe/GPX) vs Navigatore microSD/USB (255 tappe/ITN). Auto-switch formato al cambio modalità.
+    <br>🔧 <b>v10.0:</b> <b>NUOVO FORMATO ITN (TomTom nativo)</b>. Conversione URL → ITN e GPX → ITN. Bottone formato ITN aggiunto.
   </div>
 </div>
 <details class="accordion-card">
@@ -382,15 +375,6 @@ outline: none;
 <option value="21" selected>TomTom MyDrive Connect (wireless) → max 21 tappe</option>
 <option value="255">Navigatore via microSD / USB (ITN) → max 255 tappe</option>
 </select>
-</div>
-<!-- ── Slider waypoint: visibile solo su sorgente trkpt ── -->
-<div id="wpSliderWrap">
-  <div class="slider-header">
-    <span>🎚️ Waypoint estratti dalla traccia GPX</span>
-    <span class="slider-val" id="wpSliderVal">21</span>
-  </div>
-  <input type="range" id="wpSlider" min="2" max="21" value="21" step="1" oninput="onWpSliderInput(this.value)"/>
-  <div class="slider-hints"><span>2 (minimo)</span><span id="wpSliderMax">21 (max dispositivo)</span></div>
 </div>
 <div class="field">
 <label class="label">3. CARICA LA SORGENTE</label>
@@ -566,8 +550,6 @@ let _output = '';
 let _name = 'La mia rotta';
 let _currentFormat = 'gpx';
 let _wpLimit = 21;
-let _rawTrkPoints = null;   // punti grezzi trkpt originali — usati per ricalcolo slider
-let _sliderDebounce = null; // timer debounce slider
 let _map = null;
 let _tileLayerRef = null;
 let _pendingRouting = null;
@@ -597,12 +579,6 @@ function updateModelLimit() {
   } else {
     setFormat('gpx');
   }
-  // Aggiorna slider max e valore corrente se visibile
-  const slider = $('wpSlider');
-  slider.max = _wpLimit;
-  if(parseInt(slider.value) > _wpLimit) slider.value = _wpLimit;
-  $('wpSliderVal').textContent = slider.value;
-  $('wpSliderMax').textContent = `${_wpLimit} (max dispositivo)`;
   updateWaypointCountWarning();
 }
 
@@ -1208,48 +1184,7 @@ function refreshInteractiveWaypointsDisplay() {
   $('wpLabel').innerHTML = `Tappe (${_currentWaypoints.length})${badge}`;
 }
 
-// ██ SLIDER WAYPOINT ██
-function showWpSlider(show, rawPoints) {
-  const wrap = $('wpSliderWrap');
-  if(show && rawPoints && rawPoints.length > 2) {
-    _rawTrkPoints = rawPoints;
-    const slider = $('wpSlider');
-    slider.max = _wpLimit;
-    slider.value = Math.min(_wpLimit, rawPoints.length);
-    $('wpSliderVal').textContent = slider.value;
-    $('wpSliderMax').textContent = `${_wpLimit} (max dispositivo)`;
-    wrap.classList.add('on');
-  } else {
-    _rawTrkPoints = null;
-    wrap.classList.remove('on');
-  }
-}
-
-function onWpSliderInput(val) {
-  $('wpSliderVal').textContent = val;
-  clearTimeout(_sliderDebounce);
-  _sliderDebounce = setTimeout(async () => {
-    if(!_rawTrkPoints || _rawTrkPoints.length < 2) return;
-    const target = parseInt(val);
-    // Ricalcola DP con nuovo target
-    let tol = 0.00005;
-    let candidates = _dpExtract(_rawTrkPoints, tol);
-    while(candidates.length > target && tol < 1.0) { tol *= 2; candidates = _dpExtract(_rawTrkPoints, tol); }
-    if(candidates.length > target) {
-      const step = (candidates.length - 2) / (target - 2);
-      const capped = [candidates[0]];
-      for(let i = 1; i < target - 1; i++) capped.push(candidates[Math.round(i * step)]);
-      capped.push(candidates[candidates.length - 1]);
-      candidates = capped;
-    }
-    candidates.forEach((p, i) => { p.name = i === 0 ? 'Partenza' : (i === candidates.length - 1 ? 'Destinazione' : `Via ${i}`); });
-    _currentWaypoints = candidates;
-    addLog(`🎚️ Slider: ${candidates.length} waypoint → ricalcolo percorso…`, 'info');
-    await fullStateRefresh();
-  }, 420);
-}
-
-
+function updateWaypointCountWarning() {
   const count = _currentWaypoints.length, sm = $('statusMessage'), icon = sm.querySelector('.sm-icon'), title = sm.querySelector('.sm-body strong'), detail = sm.querySelector('.sm-body .sm-detail');
   const isMyDrive = (_wpLimit <= 21);
   const modeLabel = isMyDrive ? 'MyDrive Connect' : 'Navigatore (microSD/USB)';
@@ -1509,13 +1444,10 @@ async function go() {
       const parsed = await parseFile(file);
       wps = parsed.waypoints;
       gpxSourceType = parsed.sourceType;
-      // Mostra slider solo per tracce trkpt con punti grezzi disponibili
-      showWpSlider(gpxSourceType === 'trkpt', parsed.rawPoints || null);
       addLog('Trovate '+wps.length+' tappe nel file','ok'); setProgress(40);
     } else {
       if(isShortUrl(urlVal)){ urlVal=$('expandedUrlIn').value.trim(); if(!urlVal) throw new Error('Incolla la URL espansa'); }
       const parsed=extractStops(urlVal); if(!parsed) throw new Error('URL non riconosciuta');
-      showWpSlider(false);
       addLog('Fonte: '+parsed.src+' · '+parsed.stops.length+' tappe','ok'); setProgress(15);
       const directCoordsList=extractAllWaypointCoords(urlVal);
       if(directCoordsList.length===parsed.stops.length){
