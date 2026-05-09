@@ -265,6 +265,13 @@ outline: none;
 .spin { width: 17px; height: 17px; border: 2px solid rgba(255,255,255,.4); border-top-color: #fff; border-radius: 50%; animation: spin .7s linear infinite; }
 @keyframes up { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 .anim { animation: up .28s ease both; }
+/* ── Slider waypoint ── */
+#wpSliderWrap { display: none; background: var(--p-light); border: 1.5px solid var(--border-light); border-radius: 12px; padding: 12px 14px; margin-top: 10px; }
+#wpSliderWrap.on { display: block; }
+#wpSliderWrap .slider-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; font-size: 12px; font-weight: 600; color: var(--text-sec); }
+#wpSliderWrap .slider-val { background: var(--p); color: #fff; border-radius: 8px; padding: 2px 9px; font-size: 13px; font-weight: 700; min-width: 32px; text-align: center; }
+#wpSlider { width: 100%; accent-color: var(--p); cursor: pointer; }
+#wpSliderWrap .slider-hints { display: flex; justify-content: space-between; font-size: 10px; color: var(--text-muted); margin-top: 2px; }
 @media (min-width: 640px) { .btn-convert { width: auto; padding: 13px 28px; white-space: nowrap; align-self: end; } .card { padding: 28px; } }
 
 /* ── Desktop two-column layout (v18.0) ──────────────────────────────────── */
@@ -326,20 +333,21 @@ outline: none;
 <div class="header-title">Route Converter By Valter</div>
 <div class="header-sub">GIS Editor Reattivo · TomTom MyDrive (2026)</div>
 </div>
-<div class="header-pill">v10.0</div>
+<div class="header-pill">v10.4</div>
 </div>
 </header>
 <main>
 <button class="info-toggle-btn" id="infoToggleBtn" onclick="toggleInfoPanel()" aria-expanded="false" aria-controls="infoPanel">
-  ℹ️ Note importanti &amp; changelog v10.0
+  ℹ️ Note importanti &amp; changelog v10.1
   <span class="info-toggle-arrow">▼</span>
 </button>
 <div class="info-panel" id="infoPanel" role="region" aria-labelledby="infoToggleBtn">
   <div class="info">
     ⚠️ <b>IMPORTANTE:</b> TomTom MyDrive Connect accetta massimo <b>21 waypoint</b>. Caricando via microSD/USB (ITN) il limite sale a <b>255 waypoint</b>. Il tool si adatta automaticamente alla modalità selezionata.
     <br>📌 <b>Editor GIS Reattivo:</b> modifica tappe, trascina, rinomina, aggiungi punti: la mappa e il file si aggiornano in tempo reale.
-    <br>🔧 <b>v11.0:</b> <b>DOPPIA MODALITÀ</b> MyDrive Connect (21 tappe/GPX) vs Navigatore microSD/USB (255 tappe/ITN). Auto-switch formato al cambio modalità.
-    <br>🔧 <b>v10.0:</b> <b>NUOVO FORMATO ITN (TomTom nativo)</b>. Conversione URL → ITN e GPX → ITN. Bottone formato ITN aggiunto.
+    <br>🔧 <b>v10.4:</b> <b>SLIDER WAYPOINT RIPRISTINATO + FIX DEFAULT</b> — lo slider parte esattamente al 50% della scala logaritmica, estrae i waypoint in tempo reale e bypassa motoOptimize per trkpt. Garmin ibrido usa la traccia GPS originale senza chiamare OSRM.
+    <br>🔧 <b>v10.1:</b> <b>SLIDER WAYPOINT INTERATTIVO</b> — su tracce GPX (trkpt) appare uno slider per scegliere visivamente il numero di waypoint estratti. Ricalcolo mappa e file in tempo reale. Doppia modalità MyDrive Connect (21/GPX) vs Navigatore microSD/USB (255/ITN).
+    <br>🔧 <b>v10.0:</b> Nuovo formato ITN nativo. Conversione URL→ITN e GPX→ITN.
   </div>
 </div>
 <details class="accordion-card">
@@ -400,6 +408,15 @@ outline: none;
 </label>
 <input type="file" id="fileInput" accept=".gpx,.kmz,.kml,.xml"/>
 <div class="file-info" id="fileInfo"></div>
+</div>
+<!-- ── Slider waypoint: visibile solo su sorgente trkpt ── -->
+<div id="wpSliderWrap">
+  <div class="slider-header">
+    <span>🎚️ Waypoint estratti dalla traccia GPX</span>
+    <span class="slider-val" id="wpSliderVal">21</span>
+  </div>
+  <input type="range" id="wpSlider" min="0" max="100" value="100" step="1" oninput="onWpSliderInput(this.value)"/>
+  <div class="slider-hints"><span>2 (minimo)</span><span id="wpSliderMax">21 (max dispositivo)</span></div>
 </div>
 </div>
 <div class="field">
@@ -546,10 +563,13 @@ let _currentWaypoints = [];
 let _currentRoutePoints = null;
 let _currentRouteDistance = 0;
 let _currentRouteDuration = 0;
+let _garminHybridRawPoints = null; // Fast-path Garmin ibrido: traccia trkpt grezza, bypasssa OSRM
 let _output = '';
 let _name = 'La mia rotta';
 let _currentFormat = 'gpx';
 let _wpLimit = 21;
+let _rawTrkPoints = null;   // punti grezzi trkpt originali — usati per ricalcolo slider
+let _sliderDebounce = null; // timer debounce slider
 let _map = null;
 let _tileLayerRef = null;
 let _pendingRouting = null;
@@ -573,12 +593,14 @@ function setProgress(p) { $('progBar').style.width = p + '%'; }
 function addLog(msg, t='dim') { const icons = { ok:'●', info:'◆', dim:'○', warn:'◆' }; const d = document.createElement('div'); d.className = 'log-row l-' + t; d.innerHTML = '<span class="d">' + (icons[t]||'○') + '</span><span>' + msg + '</span>'; $('logEl').appendChild(d); $('logEl').scrollTop = 9999; }
 function updateModelLimit() {
   _wpLimit = parseInt($('modelSelect').value);
-  // Auto-switch format: ITN per microSD/USB (255 tappe), GPX per MyDrive Connect
-  if (_wpLimit === 255) {
-    setFormat('itn');
-  } else {
-    setFormat('gpx');
-  }
+  // Mantiene il formato selezionato dall'utente: nessun auto-switch al cambio dispositivo
+  // (il formato GPX rimane GPX anche su microSD/USB, e viceversa)
+  // Aggiorna slider al cambio dispositivo (ricalcola posizione log sulla nuova scala)
+  const slider = $('wpSlider');
+  const currentWp = Math.min(_wpLimit, _currentWaypoints.length || _wpLimit);
+  slider.value = _wpToSlider(currentWp);
+  $('wpSliderVal').textContent = currentWp;
+  $('wpSliderMax').textContent = `${_wpLimit} (max dispositivo)`;
   updateWaypointCountWarning();
 }
 
@@ -719,8 +741,51 @@ function parseGPXRobust(xmlStr) {
   };
   
   // 1. <rtept>
+  // Rilevamento formato ibrido Garmin Connect/Basecamp:
+  // questi file contengono sia <rtept> (waypoint nominali) che <trkpt> (traccia GPS ad alta res).
+  // Il tag <trp:ViaPoint> nelle estensioni identifica univocamente questo formato.
+  // In quel caso la traccia trkpt è la sorgente affidabile (preserva tornanti, passi, deviazioni).
+  // Tutti gli altri casi con rtept (rotte semplici, output del tool stesso) restano invariati.
   const rtepts = getElementsByTagNameNS(doc, 'rtept');
-  if (rtepts.length > 0) {
+  const hasTrkpt = getElementsByTagNameNS(doc, 'trkpt').length > 0;
+  const isGarminHybrid = rtepts.length > 0 && hasTrkpt &&
+    (doc.querySelector('trp\\:ViaPoint, ViaPoint') !== null);
+  if (isGarminHybrid) {
+    addLog(`🗺️ Formato Garmin ibrido rilevato (${rtepts.length} rtept + trkpt): uso traccia GPS per massima fedeltà`, 'info');
+    // Raccoglie i rtept come waypoint nominali (tappe definite dall'utente)
+    const hybridWaypoints = [];
+    for (let pt of rtepts) {
+      const { lat, lon } = extractLatLon(pt);
+      if (!isNaN(lat) && !isNaN(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+        let name = extractName(pt);
+        if (!name) {
+          const desc = getElementTextContent(pt, 'desc');
+          name = desc ? desc.trim() : `Tappa ${hybridWaypoints.length + 1}`;
+        }
+        hybridWaypoints.push({ lat, lon, name: name.substring(0, 50) });
+      }
+    }
+    // Raccoglie i trkpt grezzi come traccia ad alta risoluzione
+    const hybridRawPoints = [];
+    const allTrkpts = getElementsByTagNameNS(doc, 'trkpt');
+    for (let pt of allTrkpts) {
+      const { lat, lon } = extractLatLon(pt);
+      const eleEl = pt.getElementsByTagNameNS
+        ? (pt.getElementsByTagNameNS('*','ele')[0] || pt.getElementsByTagName('ele')[0])
+        : pt.getElementsByTagName('ele')[0];
+      const ele = eleEl ? parseFloat(eleEl.textContent) : undefined;
+      if (!isNaN(lat) && !isNaN(lon) && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+        hybridRawPoints.push({ lat, lon, ele: isNaN(ele) ? undefined : ele });
+      }
+    }
+    if (hybridWaypoints.length >= 2 && hybridRawPoints.length > 0) {
+      addLog(`✅ Garmin ibrido: ${hybridWaypoints.length} tappe utente + ${hybridRawPoints.length} punti traccia GPS`, 'ok');
+      return { waypoints: hybridWaypoints, sourceType: 'garmin_hybrid', rawPoints: hybridRawPoints };
+    }
+    // Fallback: se i rtept sono insufficienti, usa la traccia trkpt normalmente
+    addLog('⚠️ Garmin ibrido: rtept insufficienti, fallback su trkpt', 'warn');
+  }
+  if (rtepts.length > 0 && !isGarminHybrid) {
     addLog(`📍 Trovati ${rtepts.length} waypoint da tag <rtept>`, 'ok');
     for (let pt of rtepts) {
       const { lat, lon } = extractLatLon(pt);
@@ -957,6 +1022,34 @@ async function fetchRouteChunked(waypoints, signal) {
 async function updateRoutingAndUI() {
   if(_currentWaypoints.length < 2) return;
   if(_pendingRouting) { _pendingRouting.abort?.(); _pendingRouting = null; }
+
+  // ── Fast-path Garmin Hybrid ──────────────────────────────────────────────
+  // Per i file Garmin ibridi la traccia trkpt originale è già la strada reale:
+  // non ha senso mandarla a OSRM/Valhalla e rischiare rerouting errati.
+  // _garminHybridRawPoints viene impostato dal handler del file prima di questa chiamata.
+  if (_garminHybridRawPoints && _garminHybridRawPoints.length > 0) {
+    _currentRoutePoints = _garminHybridRawPoints;
+    _garminHybridRawPoints = null; // consuma il flag
+    const dist = _currentRoutePoints.reduce((acc, p, i, arr) => {
+      if (i === 0) return 0;
+      const prev = arr[i-1];
+      const dLat = (p.lat - prev.lat) * Math.PI / 180;
+      const dLon = (p.lon - prev.lon) * Math.PI / 180;
+      const a = Math.sin(dLat/2)**2 + Math.cos(prev.lat*Math.PI/180)*Math.cos(p.lat*Math.PI/180)*Math.sin(dLon/2)**2;
+      return acc + 6371000 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+    }, 0);
+    _currentRouteDistance = dist;
+    _currentRouteDuration = 0;
+    $('statDist').textContent = (dist/1000).toFixed(1) + ' km';
+    $('statTime').textContent = '—';
+    $('osrmStats').classList.add('on');
+    addLog(`✅ Traccia Garmin originale: ${_currentRoutePoints.length} punti · ${(dist/1000).toFixed(1)} km (OSRM bypassato)`, 'ok');
+    initMap();
+    await regenerateOutput();
+    return;
+  }
+  // ────────────────────────────────────────────────────────────────────────
+
   const controller = new AbortController();
   _pendingRouting = controller;
   try {
@@ -1184,6 +1277,90 @@ function refreshInteractiveWaypointsDisplay() {
   $('wpLabel').innerHTML = `Tappe (${_currentWaypoints.length})${badge}`;
 }
 
+// ██ SLIDER WAYPOINT ██
+// Scala logaritmica: slider 0-100 → waypoint 2-_wpLimit
+// Garantisce ~50% della corsa per il range 2-21 anche con limit=255
+function _sliderToWp(pos) {
+  const minWp = 2, maxWp = _wpLimit;
+  if(maxWp <= minWp) return minWp;
+  return Math.round(Math.exp(Math.log(minWp) + (pos / 100) * Math.log(maxWp / minWp)));
+}
+function _wpToSlider(wp) {
+  const minWp = 2, maxWp = _wpLimit;
+  if(maxWp <= minWp) return 100;
+  const clamped = Math.max(minWp, Math.min(maxWp, wp));
+  return Math.round((Math.log(clamped) - Math.log(minWp)) / Math.log(maxWp / minWp) * 100);
+}
+
+// Ritorna i waypoint estratti al valore iniziale del cursore (pos=50, metà log),
+// oppure null se lo slider non è applicabile (sorgente non trkpt).
+function showWpSlider(show, rawPoints) {
+  const wrap = $('wpSliderWrap');
+  if(show && rawPoints && rawPoints.length > 2) {
+    _rawTrkPoints = rawPoints;
+    const slider = $('wpSlider');
+    // Default a metà della scala logaritmica (50%) — bilanciamento fedeltà/limite
+    const midSliderPos = 50;
+    slider.value = midSliderPos;
+    const initWp = Math.min(_sliderToWp(midSliderPos), rawPoints.length);
+    $('wpSliderVal').textContent = initWp;
+    $('wpSliderMax').textContent = `${_wpLimit} (max dispositivo)`;
+    wrap.classList.add('on');
+    // Estrae i waypoint iniziali coerenti col cursore a pos=50
+    return _extractCandidatesForTarget(rawPoints, initWp);
+  } else {
+    _rawTrkPoints = null;
+    wrap.classList.remove('on');
+    return null;
+  }
+}
+
+// Estrattore condiviso tra showWpSlider e onWpSliderInput
+function _extractCandidatesForTarget(rawPoints, target) {
+  if (!rawPoints || rawPoints.length < 2) return null;
+  let candidates;
+  const dpMin = _dpExtract(rawPoints, 0.00005);
+  if (target >= dpMin.length) {
+    if (target >= rawPoints.length) {
+      candidates = [...rawPoints];
+    } else {
+      const step = (rawPoints.length - 2) / (target - 2);
+      candidates = [rawPoints[0]];
+      for (let i = 1; i < target - 1; i++) candidates.push(rawPoints[Math.round(i * step)]);
+      candidates.push(rawPoints[rawPoints.length - 1]);
+    }
+  } else {
+    let tol = 0.00005;
+    candidates = dpMin;
+    while (candidates.length > target && tol < 1.0) { tol *= 2; candidates = _dpExtract(rawPoints, tol); }
+    if (candidates.length > target) {
+      const step = (candidates.length - 2) / (target - 2);
+      const capped = [candidates[0]];
+      for (let i = 1; i < target - 1; i++) capped.push(candidates[Math.round(i * step)]);
+      capped.push(candidates[candidates.length - 1]);
+      candidates = capped;
+    }
+  }
+  candidates.forEach((p, i) => {
+    p.name = i === 0 ? 'Partenza' : (i === candidates.length - 1 ? 'Destinazione' : `Via ${i}`);
+  });
+  return candidates;
+}
+
+function onWpSliderInput(val) {
+  const target = _sliderToWp(parseInt(val));
+  $('wpSliderVal').textContent = target;
+  clearTimeout(_sliderDebounce);
+  _sliderDebounce = setTimeout(async () => {
+    if(!_rawTrkPoints || _rawTrkPoints.length < 2) return;
+    const candidates = _extractCandidatesForTarget(_rawTrkPoints, target);
+    if (!candidates) return;
+    _currentWaypoints = candidates;
+    addLog(`🎚️ Slider: ${candidates.length} waypoint → ricalcolo percorso…`, 'info');
+    await fullStateRefresh();
+  }, 420);
+}
+
 function updateWaypointCountWarning() {
   const count = _currentWaypoints.length, sm = $('statusMessage'), icon = sm.querySelector('.sm-icon'), title = sm.querySelector('.sm-body strong'), detail = sm.querySelector('.sm-body .sm-detail');
   const isMyDrive = (_wpLimit <= 21);
@@ -1380,7 +1557,7 @@ function motoOptimize(points, sourceType) {
   // BUG FIX: se la sorgente e' un file GPX con <rtept>, i punti sono waypoint
   // esplicitamente scelti dall'utente — NON vanno filtrati angolarmente.
   // Il filtro angolare (angle < 160deg) e' pensato per track-point ad alta densita'.
-  const isUserDefinedWaypoints = (sourceType === 'rtept' || sourceType === 'wpt');
+  const isUserDefinedWaypoints = (sourceType === 'rtept' || sourceType === 'wpt' || sourceType === 'garmin_hybrid');
 
   let filtered = [points[0]];
   for(let i = 1; i < points.length; i++) {
@@ -1444,10 +1621,28 @@ async function go() {
       const parsed = await parseFile(file);
       wps = parsed.waypoints;
       gpxSourceType = parsed.sourceType;
+      // Mostra slider solo per tracce trkpt con punti grezzi disponibili.
+      // showWpSlider restituisce i waypoint al valore default del cursore (pos=50 log).
+      if (gpxSourceType === 'trkpt') {
+        const sliderInitWps = showWpSlider(true, parsed.rawPoints || null);
+        if (sliderInitWps && sliderInitWps.length >= 2) {
+          wps = sliderInitWps; // sostituisce i waypoint DP calcolati da parseGPXRobust
+          addLog(`🎚️ Slider default (50%): ${wps.length} waypoint estratti`, 'info');
+        } else {
+          showWpSlider(false);
+        }
+      } else {
+        showWpSlider(false);
+      }
+      // Per il formato Garmin ibrido: passa i rawPoints al fast-path di updateRoutingAndUI
+      if (gpxSourceType === 'garmin_hybrid' && parsed.rawPoints) {
+        _garminHybridRawPoints = parsed.rawPoints;
+      }
       addLog('Trovate '+wps.length+' tappe nel file','ok'); setProgress(40);
     } else {
       if(isShortUrl(urlVal)){ urlVal=$('expandedUrlIn').value.trim(); if(!urlVal) throw new Error('Incolla la URL espansa'); }
       const parsed=extractStops(urlVal); if(!parsed) throw new Error('URL non riconosciuta');
+      showWpSlider(false);
       addLog('Fonte: '+parsed.src+' · '+parsed.stops.length+' tappe','ok'); setProgress(15);
       const directCoordsList=extractAllWaypointCoords(urlVal);
       if(directCoordsList.length===parsed.stops.length){
@@ -1470,7 +1665,11 @@ async function go() {
       const confirmReduce = await Swal.fire({ title: `Limite ${modeLabel} superato (${wps.length}/${_wpLimit})`, text: `Il percorso ha ${wps.length} tappe, ma ${modeLabel} accetta massimo ${_wpLimit}. Il tool applicherà una riduzione automatica, ma potresti perdere alcune tappe intermedie. Procedere?`, icon: 'warning', showCancelButton: true, confirmButtonText: 'Sì, riduci automaticamente', cancelButtonText: 'Annulla e modifica', confirmButtonColor: '#ef4444', cancelButtonColor: '#6b7280' });
       if (!confirmReduce.isConfirmed) throw new Error(`Operazione annullata: superato limite ${modeLabel}`);
     }
-    wps = motoOptimize(wps, file ? gpxSourceType : 'url');
+    // Per trkpt lo slider ha già estratto i waypoint ottimali — motoOptimize salterebbe.
+    // Per tutti gli altri tipi (url, rtept, wpt, kml, garmin_hybrid) si applica normalmente.
+    if (gpxSourceType !== 'trkpt') {
+      wps = motoOptimize(wps, file ? gpxSourceType : 'url');
+    }
     _currentWaypoints = [...wps];
     $('mapPreview').classList.add('on');
     $('results').classList.add('on'); $('mapPlaceholder').classList.add('hidden');
