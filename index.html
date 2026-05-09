@@ -331,7 +331,7 @@ outline: none;
 </header>
 <main>
 <button class="info-toggle-btn" id="infoToggleBtn" onclick="toggleInfoPanel()" aria-expanded="false" aria-controls="infoPanel">
-  ℹ️ Note importanti &amp; changelog v17.2
+  ℹ️ Note importanti &amp; changelog v10.0
   <span class="info-toggle-arrow">▼</span>
 </button>
 <div class="info-panel" id="infoPanel" role="region" aria-labelledby="infoToggleBtn">
@@ -430,6 +430,7 @@ outline: none;
   <div class="ph-icon">🗺️</div>
   <div class="ph-title">La mappa apparirà qui</div>
   <div class="ph-sub">Inserisci un URL o carica un file GPX / KMZ / KML, poi premi <b>Esporta per TomTom</b></div>
+  <div class="ph-sub" style="margin-top:10px; color:var(--warning,#f59e0b); font-size:11px; max-width:300px;">⚠️ <b>Attenzione:</b> il percorso visualizzato potrebbe non corrispondere esattamente a quello che apparirà sul navigatore, poiché il dispositivo potrebbe utilizzare un algoritmo di ottimizzazione differente.</div>
 </div>
 <div id="results">
 <div class="sec-label" id="wpLabel">Tappe</div>
@@ -457,7 +458,7 @@ outline: none;
 </div>
 <script>
 // ███████████████████████████████████████████████████████████████████████████
-// Route Converter By Valter v17.2
+// Route Converter By Valter v10.0
 
 // ████████████████████████████████████████████████████████
 // ██  PWA SERVICE WORKER INLINE (Blob URL)              ██
@@ -1059,7 +1060,7 @@ function buildGPXString(wps, name, routePoints) {
       return { ...w, lat: best.lat, lon: best.lon, ele: best.ele };
     });
     return '<?xml version="1.0" encoding="UTF-8"?>\n' +
-      '<gpx version="1.1" creator="TomTom Route Converter 16.1" xmlns="http://www.topografix.com/GPX/1/1">\n' +
+      '<gpx version="1.1" creator="TomTom Route Converter 10.0" xmlns="http://www.topografix.com/GPX/1/1">\n' +
       '<metadata><name>' + esc(name) + '</name></metadata>\n' +
       '<rte>\n<name>' + esc(name) + '</name>\n' +
       snappedWps.map(fmtRtept).join('\n') +
@@ -1069,7 +1070,7 @@ function buildGPXString(wps, name, routePoints) {
   }
   // Solo rte, senza traccia (nessuna rotta OSRM disponibile)
   return '<?xml version="1.0" encoding="UTF-8"?>\n' +
-    '<gpx version="1.1" creator="TomTom Route Converter 16.1" xmlns="http://www.topografix.com/GPX/1/1">\n' +
+    '<gpx version="1.1" creator="TomTom Route Converter 10.0" xmlns="http://www.topografix.com/GPX/1/1">\n' +
     '<metadata><name>' + esc(name) + '</name></metadata>\n' +
     '<rte>\n<name>' + esc(name) + '</name>\n' +
     wps.map(fmtRtept).join('\n') +
@@ -1233,7 +1234,7 @@ async function addWaypointByAddress() {
   if(!addr) { Swal.fire({ icon:'warning', title:'Inserisci un indirizzo', text:'Digita un luogo da geocodificare', confirmButtonColor:'#1e5aa8' }); return; } 
   addLog(`Geocodifica: "${addr}"`, 'info'); 
   try { 
-    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1&accept-language=it`, { headers: { 'User-Agent': 'TomTomRouteConverter/16.1' } }); 
+    const r = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(addr)}&format=json&limit=1&accept-language=it`, { headers: { 'User-Agent': 'TomTomRouteConverter/10.0' } }); 
     if(!r.ok) throw new Error(); 
     const data = await r.json(); 
     if(!data.length) throw new Error('Non trovato'); 
@@ -1260,7 +1261,7 @@ async function addWaypointByCoords() {
 }
 
 // ██ PARSER ██
-async function geocode(q) { let query = q.trim(); addLog(`Geocoding: "${query}"`, 'info'); const attempts = [query, query.replace(/,\s*\d{5}.*$/, '').trim(), query.split(',')[0].replace(/\d+/g, '').trim(), query.replace(/[^a-zA-Z\s]/g, ' ').replace(/\s+/g, ' ').trim()]; for(let i=0;i<attempts.length;i++) { const attemptQuery=attempts[i]; if(!attemptQuery||attemptQuery.length<3) continue; try { addLog(` Tentativo ${i+1}: "${attemptQuery}"`, 'dim'); const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(attemptQuery)}&format=json&limit=1&accept-language=it,en`,{headers:{'User-Agent':'TomTomRouteConverter/16.1'}}); if(r.ok){const data=await r.json(); if(data&&data.length>0) return{lat:parseFloat(data[0].lat),lon:parseFloat(data[0].lon),name:data[0].display_name.split(',')[0].trim()}; } } catch(e){} } throw new Error(`Impossibile geocodificare: "${q}"`); }
+async function geocode(q) { let query = q.trim(); addLog(`Geocoding: "${query}"`, 'info'); const attempts = [query, query.replace(/,\s*\d{5}.*$/, '').trim(), query.split(',')[0].replace(/\d+/g, '').trim(), query.replace(/[^a-zA-Z\s]/g, ' ').replace(/\s+/g, ' ').trim()]; for(let i=0;i<attempts.length;i++) { const attemptQuery=attempts[i]; if(!attemptQuery||attemptQuery.length<3) continue; try { addLog(` Tentativo ${i+1}: "${attemptQuery}"`, 'dim'); const r=await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(attemptQuery)}&format=json&limit=1&accept-language=it,en`,{headers:{'User-Agent':'TomTomRouteConverter/10.0'}}); if(r.ok){const data=await r.json(); if(data&&data.length>0) return{lat:parseFloat(data[0].lat),lon:parseFloat(data[0].lon),name:data[0].display_name.split(',')[0].trim()}; } } catch(e){} } throw new Error(`Impossibile geocodificare: "${q}"`); }
 function cleanStopName(stop){if(!stop)return stop;return stop.replace(/,\s*\d{4,5}(?=\s*[,)]|$)/g,'').replace(/\s{2,}/g,' ').trim();}
 function parseDir(url){const match=url.match(/maps\/dir\/([^@?]+)/);if(!match) return null; return match[1].split('/').map(s=>decodeURIComponent(s.replace(/\+/g,' ')).trim()).filter(s=>s&&s.length>0&&!s.startsWith('@')&&!s.includes('data=')).map(cleanStopName).filter(s=>s&&s.length>0);}
 function parseAppleMaps(url){try{const u=new URL(url);if(!u.host.includes('apple.com'))return null;const stops=[];if(u.searchParams.get('q'))stops.push(u.searchParams.get('q'));if(u.searchParams.get('daddr'))stops.push(u.searchParams.get('daddr'));const sll=u.searchParams.get('sll')||u.searchParams.get('ll');if(sll){const[lat,lon]=sll.split(',');stops.unshift(`${lat},${lon}`);}return stops.length>=2?{stops,src:'Apple Maps'}:null;}catch(e){return null;}}
@@ -1482,9 +1483,11 @@ $('urlIn').addEventListener('input',function(){ const isShort=isShortUrl(this.va
 function openExpander(){ const url=$('urlIn').value.trim(); if(url) window.open('https://www.expandurl.net/?url='+encodeURIComponent(url),'_blank'); }
 function download(){ if(!_output) return; Swal.fire({icon:'success', title:`Download avviato ✓`, html:`<strong>${esc(_name)}.${_currentFormat}</strong><br>${_currentWaypoints.length} tappe`, timer:2000, showConfirmButton:false, toast:true, position:'top-end' }); const fn=_name.replace(/\s+/g,'_')+'.'+_currentFormat; let blob; if(_currentFormat==='kmz') blob=_output; else if(_currentFormat==='itn') blob=new Blob([_output],{type:'text/plain'}); else blob=new Blob([_output],{type:'application/gpx+xml'}); const _dlUrl=URL.createObjectURL(blob); const a=Object.assign(document.createElement('a'),{href:_dlUrl,download:fn}); document.body.appendChild(a); a.click(); document.body.removeChild(a); setTimeout(()=>URL.revokeObjectURL(_dlUrl),30000); }
 
-await setFormat('gpx'); 
-updateModelLimit(); 
-if(isIOS()) $('iosHint').classList.add('on');
+(async () => {
+  await setFormat('gpx');
+  updateModelLimit();
+  if (isIOS()) $('iosHint').classList.add('on');
+})();
 </script>
 </body>
 </html>
