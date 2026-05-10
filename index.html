@@ -1677,6 +1677,7 @@ async function go() {
     await fullStateRefresh();
     setProgress(100);
     saveToHistory();
+    setTimeout(() => $('progressCard').classList.remove('on'), 600);
   } catch(err){ 
     $('progressCard').classList.remove('on'); 
     $('errorTxt').innerHTML=err.message; 
